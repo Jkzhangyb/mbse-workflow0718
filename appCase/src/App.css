@@ -1,0 +1,174 @@
+@import './styles/global.scss';
+
+/* 应用主样式 */
+.app {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+}
+
+/* Ant Design 全局样式覆盖 */
+.ant-layout {
+  background: var(--bg-secondary);
+}
+
+.ant-layout-header {
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.ant-layout-sider {
+  background: var(--bg-primary);
+}
+
+.ant-menu {
+  background: transparent;
+}
+
+.ant-btn-primary {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  
+  &:hover {
+    background: var(--primary-color-hover);
+    border-color: var(--primary-color-hover);
+  }
+}
+
+.ant-input {
+  border-color: var(--border-color);
+  
+  &:focus,
+  &:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px var(--primary-color-light);
+  }
+}
+
+.ant-select {
+  .ant-select-selector {
+    border-color: var(--border-color);
+    
+    &:hover {
+      border-color: var(--primary-color);
+    }
+  }
+  
+  &.ant-select-focused {
+    .ant-select-selector {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px var(--primary-color-light);
+    }
+  }
+}
+
+.ant-card {
+  border-color: var(--border-color);
+  
+  &:hover {
+    border-color: var(--primary-color-light);
+  }
+}
+
+.ant-tabs {
+  .ant-tabs-nav {
+    &::before {
+      border-color: var(--border-color);
+    }
+  }
+  
+  .ant-tabs-tab {
+    &.ant-tabs-tab-active {
+      color: var(--primary-color);
+      
+      .ant-tabs-tab-btn {
+        color: var(--primary-color);
+      }
+    }
+  }
+  
+  .ant-tabs-ink-bar {
+    background: var(--primary-color);
+  }
+}
+
+.ant-carousel {
+  .slick-dots {
+    li {
+      button {
+        background: var(--border-color);
+        border-radius: 50%;
+        
+        &:hover {
+          background: var(--primary-color-light);
+        }
+      }
+      
+      &.slick-active {
+        button {
+          background: var(--primary-color);
+        }
+      }
+    }
+  }
+}
+
+.ant-badge {
+  .ant-badge-dot {
+    background: var(--success-color);
+  }
+}
+
+.ant-tag {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+  
+  &:hover {
+    background: var(--primary-color-light);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+}
+
+.ant-empty {
+  .ant-empty-description {
+    color: var(--text-secondary);
+  }
+}
+
+.ant-spin {
+  .ant-spin-dot {
+    .ant-spin-dot-item {
+      background: var(--primary-color);
+    }
+  }
+}
+
+.ant-dropdown {
+  .ant-dropdown-menu {
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-lg);
+    
+    .ant-dropdown-menu-item {
+      color: var(--text-primary);
+      
+      &:hover {
+        background: var(--bg-secondary);
+      }
+    }
+  }
+}
+
+/* 响应式字体大小 */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 12px;
+  }
+}

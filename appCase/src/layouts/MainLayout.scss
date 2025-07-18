@@ -1,0 +1,136 @@
+// 使用Ant Design Layout的样式覆盖
+.main-layout {
+  height: 100vh;
+  
+  .main-sidebar {
+    .sidebar-header {
+      padding: 16px;
+      border-bottom: 1px solid #e8e8e8;
+      
+      .logo {
+        display: flex;
+        align-items: center;
+        
+        .logo-icon {
+          width: 32px;
+          height: 32px;
+          background: #1890ff;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-size: 16px;
+          margin-right: 12px;
+        }
+        
+        .logo-text {
+          .logo-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #262626;
+            display: block;
+          }
+          
+          .logo-subtitle {
+            font-size: 12px;
+            color: #666;
+            display: block;
+          }
+        }
+      }
+    }
+    
+    .sidebar-menu {
+      border-right: none;
+      
+      .ant-menu-item {
+        margin: 4px 8px;
+        border-radius: 6px;
+        height: 40px;
+        line-height: 40px;
+        
+        &:hover {
+          background: #f0f0f0;
+        }
+        
+        &.ant-menu-item-selected {
+          background: #e6f7ff;
+          color: #1890ff;
+        }
+      }
+    }
+  }
+  
+  .main-content-layout {
+    .main-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e8e8e8;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 0 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      
+      .header-left {
+        .collapse-button {
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+          
+          &:hover {
+            background: #f5f5f5;
+          }
+        }
+      }
+      
+      .header-right {
+        .user-profile {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.2s;
+          
+          &:hover {
+            background: #f5f5f5;
+          }
+          
+          .user-name {
+            font-size: 14px;
+            color: #262626;
+          }
+        }
+      }
+    }
+    
+    .main-content {
+      padding: 24px;
+      background: #f5f5f5;
+      overflow-y: auto;
+      min-height: calc(100vh - 64px);
+      flex: 1;
+    }
+  }
+}
+
+// 响应式设计
+@media (max-width: 768px) {
+  .main-layout {
+    .main-sidebar {
+      position: fixed;
+      z-index: 1000;
+      
+      &.ant-layout-sider-collapsed {
+        width: 0 !important;
+        min-width: 0 !important;
+        margin-left: -256px;
+      }
+    }
+  }
+}
