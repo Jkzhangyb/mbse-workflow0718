@@ -133,8 +133,8 @@ const App: React.FC = () => {
   const categories = ['全部', '热管理', '电控', '车身动力学', '功能安全'];
   
   const createAppTypes = [
-    { id: 1, name: '按类型创建应用', description: '从预定义的应用类型中选择' },
-    { id: 2, name: '从模板创建', description: '使用现有应用模板' },
+    { id: 1, name: '从数据创建应用', description: '基于现有数据创建新应用' },
+    { id: 2, name: '从模板创建应用', description: '使用现有应用模板' },
     { id: 3, name: '空白应用', description: '从零开始创建新应用' },
     { id: 4, name: '导入应用', description: '从文件导入现有应用' }
   ];
