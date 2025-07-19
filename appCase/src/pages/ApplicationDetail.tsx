@@ -529,7 +529,7 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }
       </div>
       ) : (
         <div className="workflow-view">
-          <WorkflowCanvas appName={appName} />
+          <WorkflowCanvas />
         </div>
       )}
 
