@@ -779,3 +779,213 @@ body {
     padding: 12px 8px;
   }
 }
+
+/* 高级表格功能样式 */
+
+/* 表格控制栏 */
+.table-controls {
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 0 16px;
+}
+
+.column-settings-btn {
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #595959;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s;
+}
+
+.column-settings-btn:hover {
+  border-color: #40a9ff;
+  color: #40a9ff;
+}
+
+/* 列设置下拉框 */
+.column-settings-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  min-width: 200px;
+  z-index: 1000;
+  padding: 8px 0;
+}
+
+.column-settings-title {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #262626;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.column-setting-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  gap: 8px;
+}
+
+.column-setting-item:hover {
+  background-color: #f5f5f5;
+}
+
+.column-setting-item input[type="checkbox"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.column-setting-item span {
+  font-size: 14px;
+  color: #595959;
+  flex: 1;
+}
+
+/* 表格容器 */
+.table-container {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* 可调整大小的表头 */
+.resizable-header {
+  position: relative;
+  user-select: none;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding-right: 8px;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.sortable .header-title {
+  cursor: pointer;
+}
+
+.sortable .header-title:hover {
+  color: #40a9ff;
+}
+
+.sort-icon {
+  font-size: 12px;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.sortable:hover .sort-icon {
+  opacity: 1;
+}
+
+/* 列宽调整手柄 */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  border-right: 2px solid transparent;
+  transition: border-color 0.3s;
+}
+
+.resize-handle:hover {
+  border-right-color: #40a9ff;
+}
+
+.resizable-header:hover .resize-handle {
+  border-right-color: #d9d9d9;
+}
+
+/* 操作按钮容器 */
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 表格头部排序状态 */
+.app-table th.sorting-asc .sort-icon::after {
+  content: ' ↑';
+  color: #40a9ff;
+  font-weight: bold;
+}
+
+.app-table th.sorting-desc .sort-icon::after {
+  content: ' ↓';
+  color: #40a9ff;
+  font-weight: bold;
+}
+
+/* 拖拽时的样式 */
+body.resizing {
+  cursor: col-resize !important;
+  user-select: none;
+}
+
+/* 响应式优化 */
+@media (max-width: 1024px) {
+  .table-controls {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  
+  .column-settings-dropdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .resize-handle {
+    display: none;
+  }
+  
+  .header-content {
+    padding-right: 0;
+  }
+  
+  .table-actions {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .table-action-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

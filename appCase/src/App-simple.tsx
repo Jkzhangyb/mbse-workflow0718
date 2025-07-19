@@ -1,5 +1,9 @@
 import React from 'react';
 import './App.css';
+import ApplicationDetail from './pages/ApplicationDetail';
+
+// 页面类型定义
+type PageType = 'home' | 'detail';
 
 // 模拟应用数据
 const applications = [
@@ -123,12 +127,43 @@ const recommendedApps = [
   }
 ];
 
+// 表格列配置类型
+interface TableColumn {
+  key: string;
+  title: string;
+  width: number;
+  visible: boolean;
+  sortable: boolean;
+}
+
+// 排序类型
+type SortOrder = 'asc' | 'desc' | null;
+
 const App: React.FC = () => {
+  // 页面导航状态
+  const [currentPage, setCurrentPage] = React.useState<PageType>('home');
+  const [currentAppName, setCurrentAppName] = React.useState<string>('');
+
   const [selectedCategory, setSelectedCategory] = React.useState<string>('全部');
   const [selectedTab, setSelectedTab] = React.useState<string>('全部');
   const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
   const [showCreateDropdown, setShowCreateDropdown] = React.useState(false);
   const [currentCarouselIndex, setCurrentCarouselIndex] = React.useState(0);
+  
+  // 表格相关状态
+  const [columns, setColumns] = React.useState<TableColumn[]>([
+    { key: 'name', title: '名称', width: 200, visible: true, sortable: true },
+    { key: 'version', title: '最新版本', width: 100, visible: true, sortable: true },
+    { key: 'category', title: '应用方向', width: 120, visible: true, sortable: true },
+    { key: 'author', title: '创建人', width: 100, visible: true, sortable: true },
+    { key: 'createTime', title: '创建时间', width: 120, visible: true, sortable: true },
+    { key: 'updateTime', title: '更新时间', width: 120, visible: true, sortable: true },
+    { key: 'actions', title: '操作', width: 120, visible: true, sortable: false }
+  ]);
+  const [sortField, setSortField] = React.useState<string | null>(null);
+  const [sortOrder, setSortOrder] = React.useState<SortOrder>(null);
+  const [showColumnSettings, setShowColumnSettings] = React.useState(false);
+  const [resizingColumn, setResizingColumn] = React.useState<{ key: string; startX: number; startWidth: number } | null>(null);
   
   const categories = ['全部', '热管理', '电控', '车身动力学', '功能安全'];
   
@@ -178,37 +213,234 @@ const App: React.FC = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  // 表格功能函数
+  const handleSort = (field: string) => {
+    const column = columns.find(col => col.key === field);
+    if (!column?.sortable) return;
+    
+    if (sortField === field) {
+      if (sortOrder === 'asc') {
+        setSortOrder('desc');
+      } else if (sortOrder === 'desc') {
+        setSortField(null);
+        setSortOrder(null);
+      } else {
+        setSortOrder('asc');
+      }
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const handleColumnResize = (e: React.MouseEvent, columnKey: string) => {
+    e.preventDefault();
+    const column = columns.find(col => col.key === columnKey);
+    if (!column) return;
+
+    setResizingColumn({
+      key: columnKey,
+      startX: e.clientX,
+      startWidth: column.width
+    });
+  };
+
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
+    if (!resizingColumn) return;
+
+    const deltaX = e.clientX - resizingColumn.startX;
+    const newWidth = Math.max(50, resizingColumn.startWidth + deltaX);
+
+    setColumns(prev => prev.map(col => 
+      col.key === resizingColumn.key 
+        ? { ...col, width: newWidth }
+        : col
+    ));
+  }, [resizingColumn]);
+
+  const handleMouseUp = React.useCallback(() => {
+    setResizingColumn(null);
+  }, []);
+
+  React.useEffect(() => {
+    if (resizingColumn) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [resizingColumn, handleMouseMove, handleMouseUp]);
+
+  const toggleColumnVisibility = (columnKey: string) => {
+    setColumns(prev => prev.map(col => 
+      col.key === columnKey 
+        ? { ...col, visible: !col.visible }
+        : col
+    ));
+  };
+
+  const getSortIcon = (field: string) => {
+    if (sortField !== field) return '↕️';
+    return sortOrder === 'asc' ? '↑' : '↓';
+  };
+
+  // 页面导航函数
+  const handleAppClick = (appName: string) => {
+    setCurrentAppName(appName);
+    setCurrentPage('detail');
+  };
+
+  const handleBackToHome = () => {
+    setCurrentPage('home');
+    setCurrentAppName('');
+  };
   
-  const filteredApps = applications.filter(app => {
-    // 根据标签页筛选
-    if (selectedTab === '我收藏的') {
-      // 这里应该根据实际的收藏状态筛选，目前先返回部分应用作为示例
-      return app.likes > 20;
-    } else if (selectedTab === '我发布的') {
-      // 这里应该根据实际的发布者筛选，目前先返回部分应用作为示例
-      return app.author === 'jkzhang' && app.status === '已安装';
+  const filteredApps = React.useMemo(() => {
+    let filtered = applications.filter(app => {
+      // 根据标签页筛选
+      if (selectedTab === '我收藏的') {
+        // 这里应该根据实际的收藏状态筛选，目前先返回部分应用作为示例
+        return app.likes > 20;
+      } else if (selectedTab === '我发布的') {
+        // 这里应该根据实际的发布者筛选，目前先返回部分应用作为示例
+        return app.author === 'jkzhang' && app.status === '已安装';
+      }
+      
+      // 根据分类筛选
+      if (selectedCategory !== '全部') {
+        return app.category === selectedCategory;
+      }
+      
+      return true;
+    });
+
+    // 排序逻辑
+    if (sortField && sortOrder) {
+      filtered.sort((a, b) => {
+        let aVal: any = '';
+        let bVal: any = '';
+
+        switch (sortField) {
+          case 'name':
+            aVal = a.name;
+            bVal = b.name;
+            break;
+          case 'version':
+            aVal = 'v1.0.0'; // 模拟版本数据
+            bVal = 'v1.0.0';
+            break;
+          case 'category':
+            aVal = a.category;
+            bVal = b.category;
+            break;
+          case 'author':
+            aVal = a.author;
+            bVal = b.author;
+            break;
+          case 'createTime':
+            aVal = '2024-01-15'; // 模拟创建时间
+            bVal = '2024-01-15';
+            break;
+          case 'updateTime':
+            aVal = '2024-03-20'; // 模拟更新时间
+            bVal = '2024-03-20';
+            break;
+          default:
+            return 0;
+        }
+
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          const result = aVal.localeCompare(bVal);
+          return sortOrder === 'asc' ? result : -result;
+        }
+
+        return 0;
+      });
     }
-    
-    // 根据分类筛选
-    if (selectedCategory !== '全部') {
-      return app.category === selectedCategory;
-    }
-    
-    return true;
-  });
+
+    return filtered;
+  }, [selectedTab, selectedCategory, sortField, sortOrder]);
 
   return (
     <div className="app">
-      {/* 顶部标题栏 */}
-      <header className="app-header">
-        <div className="header-left">
-          <h1>应用中心</h1>
-        </div>
-        <div className="user-info">
-          <span>管理员</span>
-          <div className="avatar">👤</div>
-        </div>
-      </header>
+      {/* 根据当前页面状态渲染不同内容 */}
+      {currentPage === 'detail' ? (
+        <>
+          {/* 顶部标题栏 */}
+          <header className="app-header">
+            <div className="header-left">
+              <h1>应用中心</h1>
+            </div>
+            <div className="user-info">
+              <span>管理员</span>
+              <div className="avatar">👤</div>
+            </div>
+          </header>
+
+          {/* 主要内容区域 */}
+          <main className="main-content">
+            {/* 左侧导航 */}
+            <nav className="sidebar">
+              <div className="logo">
+                <div className="logo-icon">MBSE</div>
+              </div>
+              <ul className="nav-menu">
+                <li className="nav-item">
+                  <span className="nav-icon">⚙️</span>
+                  <span>控制台</span>
+                </li>
+                <li className="nav-item active">
+                  <span className="nav-icon">📱</span>
+                  <span>应用中心</span>
+                </li>
+                <li className="nav-item">
+                  <span className="nav-icon">🔄</span>
+                  <span>工作流管理</span>
+                </li>
+                <li className="nav-item">
+                  <span className="nav-icon">🧩</span>
+                  <span>组件管理</span>
+                </li>
+                <li className="nav-item">
+                  <span className="nav-icon">🛠️</span>
+                  <span>工具服务</span>
+                </li>
+                <li className="nav-item">
+                  <span className="nav-icon">📊</span>
+                  <span>模型及数据管理</span>
+                </li>
+                <li className="nav-item">
+                  <span className="nav-icon">👥</span>
+                  <span>用户及权限管理</span>
+                </li>
+              </ul>
+            </nav>
+
+            {/* 应用详情页面 */}
+            <div className="content-area">
+              <ApplicationDetail 
+                appName={currentAppName} 
+                onBack={handleBackToHome} 
+              />
+            </div>
+          </main>
+        </>
+      ) : (
+        <>
+          {/* 应用中心首页 */}
+          {/* 顶部标题栏 */}
+          <header className="app-header">
+            <div className="header-left">
+              <h1>应用中心</h1>
+            </div>
+            <div className="user-info">
+              <span>管理员</span>
+              <div className="avatar">👤</div>
+            </div>
+          </header>
 
       {/* 主要内容区域 */}
       <main className="main-content">
@@ -257,7 +489,12 @@ const App: React.FC = () => {
               <button className="carousel-nav prev" onClick={prevSlide}>❮</button>
               <div className="carousel-track">
                 {getVisibleSlides().map((app, index) => (
-                  <div key={`${app.id}-${index}`} className="carousel-slide">
+                  <div 
+                    key={`${app.id}-${index}`} 
+                    className="carousel-slide"
+                    onClick={() => app.name === '空调热管理' && handleAppClick(app.name)}
+                    style={{ cursor: app.name === '空调热管理' ? 'pointer' : 'default' }}
+                  >
                     <div className="slide-image" style={{ background: app.gradient }}>
                       <div className="slide-overlay">
                         <div className="slide-content">
@@ -348,45 +585,95 @@ const App: React.FC = () => {
               {/* 应用列表 */}
               {viewMode === 'list' ? (
                 <div className="app-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>名称</th>
-                        <th>最新版本</th>
-                        <th>应用方向</th>
-                        <th>创建人</th>
-                        <th>创建时间</th>
-                        <th>更新时间</th>
-                        <th>操作</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredApps.map(app => (
-                        <tr key={app.id}>
-                          <td>
-                            <div className="table-app-name">
-                              <span className="table-app-icon">{app.icon}</span>
-                              <div>
-                                <div className="table-app-title">{app.name}</div>
-                                <div className="table-app-description">{app.description}</div>
+                  <div className="table-controls">
+                    <button 
+                      className="column-settings-btn"
+                      onClick={() => setShowColumnSettings(!showColumnSettings)}
+                    >
+                      ⚙️ 列设置
+                    </button>
+                    {showColumnSettings && (
+                      <div className="column-settings-dropdown">
+                        <div className="column-settings-title">选择显示列</div>
+                        {columns.map(column => (
+                          <label key={column.key} className="column-setting-item">
+                            <input
+                              type="checkbox"
+                              checked={column.visible}
+                              onChange={() => toggleColumnVisibility(column.key)}
+                            />
+                            <span>{column.title}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="table-container">
+                    <table>
+                      <thead>
+                        <tr>
+                          {columns.filter(col => col.visible).map(column => (
+                            <th 
+                              key={column.key} 
+                              style={{ width: `${column.width}px` }}
+                              className={`resizable-header ${column.sortable ? 'sortable' : ''}`}
+                            >
+                              <div className="header-content">
+                                <span 
+                                  className="header-title"
+                                  onClick={() => column.sortable && handleSort(column.key)}
+                                >
+                                  {column.title}
+                                  {column.sortable && (
+                                    <span className="sort-icon">
+                                      {getSortIcon(column.key)}
+                                    </span>
+                                  )}
+                                </span>
+                                <div 
+                                  className="resize-handle"
+                                  onMouseDown={(e) => handleColumnResize(e, column.key)}
+                                />
                               </div>
-                            </div>
-                          </td>
-                          <td>v1.0.0</td>
-                          <td>
-                            <span className="table-category-tag">{app.category}</span>
-                          </td>
-                          <td>{app.author}</td>
-                          <td>2024-01-15</td>
-                          <td>2024-03-20</td>
-                          <td>
-                            <button className="table-action-btn">复制</button>
-                            <button className="table-action-btn delete">删除</button>
-                          </td>
+                            </th>
+                          ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {filteredApps.map(app => (
+                          <tr key={app.id}>
+                            {columns.filter(col => col.visible).map(column => (
+                              <td key={column.key} style={{ width: `${column.width}px` }}>
+                                {column.key === 'name' && (
+                                  <div className="table-app-name">
+                                    <span className="table-app-icon">{app.icon}</span>
+                                    <div>
+                                      <div className="table-app-title">{app.name}</div>
+                                      <div className="table-app-description">{app.description}</div>
+                                    </div>
+                                  </div>
+                                )}
+                                {column.key === 'version' && 'v1.0.0'}
+                                {column.key === 'category' && (
+                                  <span className="table-category-tag">{app.category}</span>
+                                )}
+                                {column.key === 'author' && app.author}
+                                {column.key === 'createTime' && '2024-01-15'}
+                                {column.key === 'updateTime' && '2024-03-20'}
+                                {column.key === 'actions' && (
+                                  <div className="table-actions">
+                                    <button className="table-action-btn">复制</button>
+                                    <button className="table-action-btn delete">删除</button>
+                                  </div>
+                                )}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
                 <div className={`app-grid ${viewMode}`}>
@@ -417,6 +704,8 @@ const App: React.FC = () => {
           </div>
         </div>
       </main>
+        </>
+      )}
     </div>
   );
 };
