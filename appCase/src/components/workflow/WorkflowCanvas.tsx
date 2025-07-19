@@ -346,12 +346,12 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
               title={simulationStatus === 'running' ? '暂停仿真' : '开始仿真'}
             >
               {simulationStatus === 'running' ? (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                  <rect x="3" y="2" width="3" height="12" />
-                  <rect x="10" y="2" width="3" height="12" />
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                  <rect x="3" y="2" width="4" height="12" />
+                  <rect x="9" y="2" width="4" height="12" />
                 </svg>
               ) : (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M3 2v12l10-6L3 2z" />
                 </svg>
               )}
@@ -364,8 +364,8 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
               disabled={simulationStatus === 'idle'}
               title="停止仿真"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                <rect x="2" y="2" width="12" height="12" />
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                <rect x="3" y="3" width="10" height="10" />
               </svg>
               停止
             </button>
@@ -415,20 +415,20 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
             {/* 画布控制按钮 - 放在ReactFlow内部 */}
             <CanvasControls />
           </ReactFlow>
+          
+          {/* 节点配置面板 */}
+          {selectedNode && (
+            <NodeConfigPanel
+              node={selectedNode}
+              onClose={() => setSelectedNode(null)}
+              onUpdate={(updatedNode: Node) => {
+                setNodes((nds) =>
+                  nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+                );
+              }}
+            />
+          )}
         </div>
-
-        {/* 节点配置面板 */}
-        {selectedNode && (
-          <NodeConfigPanel
-            node={selectedNode}
-            onClose={() => setSelectedNode(null)}
-            onUpdate={(updatedNode: Node) => {
-              setNodes((nds) =>
-                nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-              );
-            }}
-          />
-        )}
 
         {/* 右键菜单 */}
         <ContextMenu
