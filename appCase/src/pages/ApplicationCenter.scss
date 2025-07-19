@@ -1,0 +1,300 @@
+.application-center {
+  padding: 24px;
+  background: #f5f5f5;
+  min-height: calc(100vh - 64px);
+
+  .filter-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px 24px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    .toolbar-left {
+      display: flex;
+      gap: 16px;
+    }
+
+    .toolbar-right {
+      .ant-space {
+        .ant-btn {
+          border-radius: 6px;
+        }
+      }
+    }
+  }
+
+  .applications-section {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+
+    .applications-tabs {
+      padding: 0 24px;
+      
+      .ant-tabs-nav {
+        margin-bottom: 0;
+      }
+    }
+
+    .applications-content {
+      padding: 0 24px 24px;
+
+      .loading-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+      }
+
+      .applications-grid {
+        &.card {
+          .ant-row {
+            margin: 0 -12px;
+            
+            .ant-col {
+              padding: 0 12px;
+            }
+          }
+        }
+      }
+
+      // 表格样式
+      .applications-table {
+        background: #fff;
+        border-radius: 8px;
+        margin-top: 16px;
+        
+        .app-name-cell {
+          display: flex;
+          align-items: center;
+          
+          .ant-avatar {
+            flex-shrink: 0;
+          }
+          
+          > div {
+            min-width: 0; // 允许文本截断
+            
+            > div:first-child {
+              display: flex;
+              align-items: center;
+              font-weight: 500;
+              margin-bottom: 2px;
+              
+              .ant-badge {
+                margin-left: 4px;
+              }
+            }
+            
+            .ant-typography {
+              margin: 0;
+              line-height: 1.2;
+              max-width: 200px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              color: #8c8c8c;
+            }
+          }
+        }
+
+        .ant-table-thead > tr > th {
+          background: #fafafa;
+          border-bottom: 1px solid #e8e8e8;
+          font-weight: 600;
+          color: #262626;
+          font-size: 14px;
+        }
+
+        .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #f0f0f0;
+          font-size: 13px;
+        }
+
+        .ant-table-tbody > tr:hover > td {
+          background: #fafafa;
+        }
+
+        .ant-table-pagination {
+          margin: 24px 0 0;
+          text-align: center;
+        }
+        
+        // 操作按钮样式
+        .ant-btn {
+          &:hover {
+            transform: scale(1.05);
+            transition: transform 0.2s;
+          }
+        }
+        
+        .ant-btn-text.ant-btn-dangerous:hover {
+          color: #ff4d4f;
+          background-color: #fff2f0;
+        }
+      }
+    }
+  }
+
+  // 应用卡片样式
+  .application-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #e8e8e8;
+
+    &:hover {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .card-cover {
+      position: relative;
+      height: 160px;
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      
+      .card-thumbnail {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        
+        .app-icon {
+          font-size: 48px;
+          color: #fff;
+        }
+      }
+      
+      .card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+    }
+
+    &:hover .card-overlay {
+      opacity: 1;
+    }
+
+    .card-content {
+      padding: 16px;
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 8px;
+
+        .app-name {
+          margin: 0;
+          font-size: 16px;
+          line-height: 1.4;
+        }
+
+        .app-version {
+          font-size: 12px;
+          white-space: nowrap;
+        }
+      }
+
+      .app-description {
+        margin-bottom: 12px;
+        color: #666;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .card-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .app-tags {
+          flex: 1;
+          
+          .ant-tag {
+            margin-right: 4px;
+            margin-bottom: 4px;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+          }
+        }
+
+        .app-author {
+          display: flex;
+          align-items: center;
+          margin-left: 8px;
+
+          .author-name {
+            margin-left: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
+    .ant-card-actions {
+      background: #fafafa;
+      border-top: 1px solid #e8e8e8;
+      
+      li {
+        margin: 0;
+        
+        .ant-btn {
+          border: none;
+          background: none;
+          box-shadow: none;
+          
+          &.favorite-active {
+            color: #ff4d4f;
+          }
+        }
+      }
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    padding: 16px;
+
+    .filter-toolbar {
+      flex-direction: column;
+      gap: 16px;
+
+      .toolbar-left,
+      .toolbar-right {
+        width: 100%;
+      }
+
+      .toolbar-left {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+
+    .applications-table {
+      .ant-table {
+        font-size: 12px;
+        
+        .ant-table-thead > tr > th,
+        .ant-table-tbody > tr > td {
+          padding: 8px;
+        }
+      }
+    }
+  }
+}

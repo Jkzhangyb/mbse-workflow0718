@@ -346,29 +346,73 @@ const App: React.FC = () => {
               </div>
 
               {/* 应用列表 */}
-              <div className={`app-grid ${viewMode}`}>
-                {filteredApps.map(app => (
-                  <div key={app.id} className="app-card">
-                    <div className="app-icon">{app.icon}</div>
-                    <div className="app-info">
-                      <h3>{app.name}</h3>
-                      <p className="app-author">{app.author}</p>
-                      <p className="app-description">{app.description}</p>
-                      <div className="app-tags">
-                        {app.tags.map(tag => (
-                          <span key={tag} className="tag">{tag}</span>
-                        ))}
-                      </div>
-                      <div className="app-stats">
-                        <span className="stat">👍 {app.likes}</span>
-                        <span className="stat">👁️ {app.views}</span>
-                        <span className="stat">⭐ 1</span>
-                        <span className="more">···</span>
+              {viewMode === 'list' ? (
+                <div className="app-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>名称</th>
+                        <th>最新版本</th>
+                        <th>应用方向</th>
+                        <th>创建人</th>
+                        <th>创建时间</th>
+                        <th>更新时间</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredApps.map(app => (
+                        <tr key={app.id}>
+                          <td>
+                            <div className="table-app-name">
+                              <span className="table-app-icon">{app.icon}</span>
+                              <div>
+                                <div className="table-app-title">{app.name}</div>
+                                <div className="table-app-description">{app.description}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td>v1.0.0</td>
+                          <td>
+                            <span className="table-category-tag">{app.category}</span>
+                          </td>
+                          <td>{app.author}</td>
+                          <td>2024-01-15</td>
+                          <td>2024-03-20</td>
+                          <td>
+                            <button className="table-action-btn">复制</button>
+                            <button className="table-action-btn delete">删除</button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className={`app-grid ${viewMode}`}>
+                  {filteredApps.map(app => (
+                    <div key={app.id} className="app-card">
+                      <div className="app-icon">{app.icon}</div>
+                      <div className="app-info">
+                        <h3>{app.name}</h3>
+                        <p className="app-author">{app.author}</p>
+                        <p className="app-description">{app.description}</p>
+                        <div className="app-tags">
+                          {app.tags.map(tag => (
+                            <span key={tag} className="tag">{tag}</span>
+                          ))}
+                        </div>
+                        <div className="app-stats">
+                          <span className="stat">👍 {app.likes}</span>
+                          <span className="stat">👁️ {app.views}</span>
+                          <span className="stat">⭐ 1</span>
+                          <span className="more">···</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
