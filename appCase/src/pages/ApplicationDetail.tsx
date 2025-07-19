@@ -9,6 +9,95 @@ interface ApplicationDetailProps {
 const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }) => {
   const [simulationProgress, setSimulationProgress] = React.useState(67);
   const [isSimulationRunning, setIsSimulationRunning] = React.useState(false);
+  const [tooltip, setTooltip] = React.useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    value: string;
+    time: string;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    value: '',
+    time: ''
+  });
+
+  // 数据点定义
+  const speedData = [
+    { x: 0, y: 180, time: '0秒' },
+    { x: 37.5, y: 200, time: '60秒' },
+    { x: 75, y: 220, time: '120秒' },
+    { x: 112.5, y: 230, time: '180秒' },
+    { x: 150, y: 240, time: '240秒' },
+    { x: 187.5, y: 242, time: '300秒' },
+    { x: 225, y: 240, time: '360秒' },
+    { x: 262.5, y: 236, time: '420秒' },
+    { x: 300, y: 220, time: '480秒' }
+  ];
+
+  const distanceData = [
+    { x: 0, y: 0, time: '0秒' },
+    { x: 37.5, y: 2, time: '60秒' },
+    { x: 75, y: 5, time: '120秒' },
+    { x: 112.5, y: 10, time: '180秒' },
+    { x: 150, y: 15, time: '240秒' },
+    { x: 187.5, y: 20, time: '300秒' },
+    { x: 225, y: 23, time: '360秒' },
+    { x: 262.5, y: 24.5, time: '420秒' },
+    { x: 300, y: 25, time: '480秒' }
+  ];
+
+  const temperatureData = [
+    { x: 0, y: 350, time: '0秒' },
+    { x: 37.5, y: 450, time: '60秒' },
+    { x: 75, y: 400, time: '120秒' },
+    { x: 112.5, y: 520, time: '180秒' },
+    { x: 150, y: 420, time: '240秒' },
+    { x: 187.5, y: 540, time: '300秒' },
+    { x: 225, y: 600, time: '360秒' },
+    { x: 262.5, y: 550, time: '420秒' },
+    { x: 300, y: 580, time: '480秒' }
+  ];
+
+  const handleChartMouseMove = (event: React.MouseEvent, chartType: 'speed' | 'distance' | 'temperature') => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left - 40; // 减去左边距
+    const svgWidth = rect.width - 60; // 减去左右边距
+    const progress = Math.max(0, Math.min(1, x / svgWidth));
+    const timeIndex = Math.round(progress * 8);
+    
+    let data, unit;
+    switch (chartType) {
+      case 'speed':
+        data = speedData;
+        unit = 'km/h';
+        break;
+      case 'distance':
+        data = distanceData;
+        unit = 'km';
+        break;
+      case 'temperature':
+        data = temperatureData;
+        unit = '°C';
+        break;
+    }
+    
+    if (timeIndex >= 0 && timeIndex < data.length) {
+      const point = data[timeIndex];
+      setTooltip({
+        visible: true,
+        x: event.clientX,
+        y: event.clientY - 10,
+        value: `${point.y}${unit}`,
+        time: point.time
+      });
+    }
+  };
+
+  const handleChartMouseLeave = () => {
+    setTooltip(prev => ({ ...prev, visible: false }));
+  };
 
   const handleStartSimulation = () => {
     setIsSimulationRunning(true);
@@ -287,9 +376,42 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }
                 <button className="chart-close">×</button>
               </div>
               <div className="chart-placeholder">
-                <div className="mock-chart speed-chart">
-                  <div className="chart-line"></div>
-                  <div className="chart-data">速度 (km/h)</div>
+                <div 
+                  className="mock-chart speed-chart"
+                  onMouseMove={(e) => handleChartMouseMove(e, 'speed')}
+                  onMouseLeave={handleChartMouseLeave}
+                >
+                  <div className="x-axis"></div>
+                  <div className="y-labels">
+                    <span>250</span>
+                    <span>200</span>
+                    <span>150</span>
+                    <span>100</span>
+                    <span>50</span>
+                    <span>0</span>
+                  </div>
+                  <div className="x-labels">
+                    <span>0</span>
+                    <span>120</span>
+                    <span>240</span>
+                    <span>360</span>
+                    <span>480</span>
+                  </div>
+                  <div className="y-unit">速度(km/h)</div>
+                  <div className="curve-svg">
+                    <svg viewBox="0 0 300 120">
+                      <defs>
+                        <linearGradient id="speedGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#1890ff" stopOpacity="0.8"/>
+                          <stop offset="100%" stopColor="#40a9ff" stopOpacity="0.6"/>
+                        </linearGradient>
+                      </defs>
+                      <path d="M0,100 L37.5,80 L75,65 L112.5,55 L150,50 L187.5,48 L225,50 L262.5,54 L300,60" stroke="url(#speedGradient)" strokeWidth="2" fill="none"/>
+                      {/* 透明的交互区域 */}
+                      <rect x="0" y="0" width="300" height="120" fill="transparent" style={{cursor: 'crosshair'}} />
+                    </svg>
+                  </div>
+                  <div className="chart-data">时间 (秒)</div>
                 </div>
               </div>
             </div>
@@ -300,9 +422,42 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }
                 <button className="chart-close">×</button>
               </div>
               <div className="chart-placeholder">
-                <div className="mock-chart distance-chart">
-                  <div className="chart-line"></div>
-                  <div className="chart-data">距离 (km)</div>
+                <div 
+                  className="mock-chart distance-chart"
+                  onMouseMove={(e) => handleChartMouseMove(e, 'distance')}
+                  onMouseLeave={handleChartMouseLeave}
+                >
+                  <div className="x-axis"></div>
+                  <div className="y-labels">
+                    <span>25</span>
+                    <span>20</span>
+                    <span>15</span>
+                    <span>10</span>
+                    <span>5</span>
+                    <span>0</span>
+                  </div>
+                  <div className="x-labels">
+                    <span>0</span>
+                    <span>120</span>
+                    <span>240</span>
+                    <span>360</span>
+                    <span>480</span>
+                  </div>
+                  <div className="y-unit">距离(km)</div>
+                  <div className="curve-svg">
+                    <svg viewBox="0 0 300 120">
+                      <defs>
+                        <linearGradient id="distanceGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#52c41a" stopOpacity="0.8"/>
+                          <stop offset="100%" stopColor="#73d13d" stopOpacity="0.6"/>
+                        </linearGradient>
+                      </defs>
+                      <path d="M0,120 L37.5,110 L75,95 L112.5,75 L150,50 L187.5,30 L225,15 L262.5,8 L300,5" stroke="url(#distanceGradient)" strokeWidth="2" fill="none"/>
+                      {/* 透明的交互区域 */}
+                      <rect x="0" y="0" width="300" height="120" fill="transparent" style={{cursor: 'crosshair'}} />
+                    </svg>
+                  </div>
+                  <div className="chart-data">时间 (秒)</div>
                 </div>
               </div>
             </div>
@@ -313,15 +468,64 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }
                 <button className="chart-close">×</button>
               </div>
               <div className="chart-placeholder">
-                <div className="mock-chart temperature-chart">
-                  <div className="chart-line"></div>
-                  <div className="chart-data">制动温度 (°C)</div>
+                <div 
+                  className="mock-chart temperature-chart"
+                  onMouseMove={(e) => handleChartMouseMove(e, 'temperature')}
+                  onMouseLeave={handleChartMouseLeave}
+                >
+                  <div className="x-axis"></div>
+                  <div className="y-labels">
+                    <span>700</span>
+                    <span>600</span>
+                    <span>500</span>
+                    <span>400</span>
+                    <span>300</span>
+                    <span>200</span>
+                  </div>
+                  <div className="x-labels">
+                    <span>0</span>
+                    <span>120</span>
+                    <span>240</span>
+                    <span>360</span>
+                    <span>480</span>
+                  </div>
+                  <div className="y-unit">温度(°C)</div>
+                  <div className="curve-svg">
+                    <svg viewBox="0 0 300 120">
+                      <defs>
+                        <linearGradient id="tempGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#faad14" stopOpacity="0.8"/>
+                          <stop offset="100%" stopColor="#ffc53d" stopOpacity="0.6"/>
+                        </linearGradient>
+                      </defs>
+                      <path d="M0,90 L37.5,70 L75,85 L112.5,60 L150,75 L187.5,55 L225,40 L262.5,50 L300,45" stroke="url(#tempGradient)" strokeWidth="2" fill="none"/>
+                      {/* 透明的交互区域 */}
+                      <rect x="0" y="0" width="300" height="120" fill="transparent" style={{cursor: 'crosshair'}} />
+                    </svg>
+                  </div>
+                  <div className="chart-data">时间 (秒)</div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* 全局Tooltip */}
+      {tooltip.visible && (
+        <div 
+          className="chart-tooltip"
+          style={{
+            left: tooltip.x,
+            top: tooltip.y,
+            position: 'fixed',
+            zIndex: 1000
+          }}
+        >
+          <div className="tooltip-time">{tooltip.time}</div>
+          <div className="tooltip-value">{tooltip.value}</div>
+        </div>
+      )}
     </div>
   );
 };
