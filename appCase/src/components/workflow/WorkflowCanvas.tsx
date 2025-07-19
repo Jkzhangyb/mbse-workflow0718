@@ -5,6 +5,8 @@ import {
   useEdgesState,
   addEdge,
   ConnectionMode,
+  useReactFlow,
+  ReactFlowProvider,
 } from '@reactflow/core';
 import type { Node, Edge, Connection } from '@reactflow/core';
 import { Background } from '@reactflow/background';
@@ -21,6 +23,46 @@ import './WorkflowCanvas.scss';
 // 自定义节点类型
 const nodeTypes = {
   custom: CustomNode,
+};
+
+// 画布控制组件
+const CanvasControls: React.FC = () => {
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
+
+  return (
+    <div className="canvas-controls">
+      <button 
+        className="canvas-control-btn"
+        onClick={() => fitView({ padding: 0.2, duration: 300 })}
+        title="画布居中"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M2 2h3v1H3v2H2V2zm9 0h3v3h-1V3h-2V2zM2 11v3h3v-1H3v-2H2zm12 0v2h-2v1h3v-3h-1z"/>
+          <rect x="6" y="6" width="4" height="4" />
+        </svg>
+      </button>
+      
+      <button 
+        className="canvas-control-btn"
+        onClick={() => zoomIn({ duration: 200 })}
+        title="放大"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 3.5a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 3.5z"/>
+        </svg>
+      </button>
+      
+      <button 
+        className="canvas-control-btn"
+        onClick={() => zoomOut({ duration: 200 })}
+        title="缩小"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+        </svg>
+      </button>
+    </div>
+  );
 };
 
 // 初始节点数据
@@ -178,6 +220,9 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
     nodeId?: string;
   }>({ visible: false, x: 0, y: 0 });
 
+  // 仿真状态管理
+  const [simulationStatus, setSimulationStatus] = useState<'idle' | 'running' | 'paused'>('idle');
+  
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // 连接节点
@@ -286,79 +331,116 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
   }, [nodes, setNodes, closeContextMenu]);
 
   return (
-    <div className="workflow-canvas-container">
-      {/* 节点库 - 暂时隐藏 */}
-      {/* <NodeLibrary /> */}
-      
-      {/* 工作流画布 */}
-      <div className="workflow-canvas" ref={reactFlowWrapper}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={onNodeClick}
-          onNodeContextMenu={onNodeContextMenu}
-          onPaneClick={onPaneClick}
-          // onDrop={onDrop}
-          // onDragOver={onDragOver}
-          nodeTypes={nodeTypes}
-          connectionMode={ConnectionMode.Loose}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
-          fitView
-        >
-          <Background />
-          <Controls />
-          <MiniMap 
-            position="bottom-left"
-            nodeColor={(node) => {
-              switch (node.data?.type) {
-                case 'requirement': return '#52c41a';
-                case 'architecture': return '#1890ff';
-                case 'simulation': return '#fa8c16';
-                default: return '#666';
-              }
-            }}
-            maskColor="rgba(24, 144, 255, 0.2)"
-            pannable={true}
-            zoomable={true}
-            ariaLabel="画布导航缩略图"
-            style={{
-              backgroundColor: '#fff',
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-              width: 200,
-              height: 150,
+    <ReactFlowProvider>
+      <div className="workflow-canvas-container">
+        {/* 节点库 - 暂时隐藏 */}
+        {/* <NodeLibrary /> */}
+        
+        {/* 工作流画布 */}
+        <div className="workflow-canvas" ref={reactFlowWrapper}>
+          {/* 仿真控制按钮 */}
+          <div className="simulation-controls">
+            <button 
+              className={`control-btn ${simulationStatus === 'running' ? 'active' : ''}`}
+              onClick={() => setSimulationStatus(simulationStatus === 'running' ? 'paused' : 'running')}
+              title={simulationStatus === 'running' ? '暂停仿真' : '开始仿真'}
+            >
+              {simulationStatus === 'running' ? (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <rect x="3" y="2" width="3" height="12" />
+                  <rect x="10" y="2" width="3" height="12" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M3 2v12l10-6L3 2z" />
+                </svg>
+              )}
+              {simulationStatus === 'running' ? '暂停' : '开始'}
+            </button>
+            
+            <button 
+              className="control-btn"
+              onClick={() => setSimulationStatus('idle')}
+              disabled={simulationStatus === 'idle'}
+              title="停止仿真"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <rect x="2" y="2" width="12" height="12" />
+              </svg>
+              停止
+            </button>
+          </div>
+
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            onNodeClick={onNodeClick}
+            onNodeContextMenu={onNodeContextMenu}
+            onPaneClick={onPaneClick}
+            // onDrop={onDrop}
+            // onDragOver={onDragOver}
+            nodeTypes={nodeTypes}
+            connectionMode={ConnectionMode.Loose}
+            defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
+            fitView
+          >
+            <Background />
+            <Controls />
+            <MiniMap 
+              position="bottom-left"
+              nodeColor={(node) => {
+                switch (node.data?.type) {
+                  case 'requirement': return '#52c41a';
+                  case 'architecture': return '#1890ff';
+                  case 'simulation': return '#fa8c16';
+                  default: return '#666';
+                }
+              }}
+              maskColor="rgba(24, 144, 255, 0.2)"
+              pannable={true}
+              zoomable={true}
+              ariaLabel="画布导航缩略图"
+              style={{
+                backgroundColor: '#fff',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                width: 200,
+                height: 150,
+              }}
+            />
+            {/* 画布控制按钮 - 放在ReactFlow内部 */}
+            <CanvasControls />
+          </ReactFlow>
+        </div>
+
+        {/* 节点配置面板 */}
+        {selectedNode && (
+          <NodeConfigPanel
+            node={selectedNode}
+            onClose={() => setSelectedNode(null)}
+            onUpdate={(updatedNode: Node) => {
+              setNodes((nds) =>
+                nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+              );
             }}
           />
-        </ReactFlow>
-      </div>
+        )}
 
-      {/* 节点配置面板 */}
-      {selectedNode && (
-        <NodeConfigPanel
-          node={selectedNode}
-          onClose={() => setSelectedNode(null)}
-          onUpdate={(updatedNode: Node) => {
-            setNodes((nds) =>
-              nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-            );
-          }}
+        {/* 右键菜单 */}
+        <ContextMenu
+          visible={contextMenu.visible}
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={closeContextMenu}
+          onDelete={() => contextMenu.nodeId && deleteNode(contextMenu.nodeId)}
+          onDuplicate={() => contextMenu.nodeId && duplicateNode(contextMenu.nodeId)}
         />
-      )}
-
-      {/* 右键菜单 */}
-      <ContextMenu
-        visible={contextMenu.visible}
-        x={contextMenu.x}
-        y={contextMenu.y}
-        onClose={closeContextMenu}
-        onDelete={() => contextMenu.nodeId && deleteNode(contextMenu.nodeId)}
-        onDuplicate={() => contextMenu.nodeId && duplicateNode(contextMenu.nodeId)}
-      />
-    </div>
+      </div>
+    </ReactFlowProvider>
   );
 };
 
