@@ -1,32 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Handle, Position } from '@reactflow/core';
 import type { NodeProps } from '@reactflow/core';
 
 interface CustomNodeData {
   label: string;
   type: string;
-  description: string;
+  description?: string;
+  tool?: string;
+  subActions?: string[];
+  collapsed?: boolean;
 }
 
 const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => {
-  const getNodeIcon = (type: string) => {
-    switch (type) {
-      case 'requirement':
-        return '📋';
-      case 'architecture':
-        return '🏗️';
-      case 'simulation':
-        return '⚡';
-      case 'analysis':
-        return '📊';
-      case 'optimization':
-        return '🎯';
+  const [isCollapsed, setIsCollapsed] = useState(data.collapsed || false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  const getToolColor = (tool: string) => {
+    switch (tool?.toLowerCase()) {
+      case 'polarion':
+        return '#1890ff';
+      case 'ea':
+      case 'simulink':
+        return '#e97627';
+      case 'm-works':
+        return '#722ed1';
+      case 'doe':
+        return '#52c41a';
+      case 'ansys':
+        return '#ffb800';
+      case 'doors':
+        return '#0066cc';
       default:
-        return '⚙️';
+        return '#52c41a';
     }
   };
 
-  const getNodeColor = (type: string) => {
+  const getNodeTypeColor = (type: string) => {
     switch (type) {
       case 'requirement':
         return '#1890ff';
@@ -43,61 +52,177 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => 
     }
   };
 
+  const toggleCollapsed = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
     <div 
-      className={`custom-node ${selected ? 'selected' : ''}`}
+      className={`custom-node ${selected ? 'selected' : ''} ${isCollapsed ? 'collapsed' : ''}`}
+      data-node-type={data.type}
       style={{
         backgroundColor: '#fff',
-        border: `2px solid ${selected ? getNodeColor(data.type) : '#d9d9d9'}`,
-        borderRadius: '8px',
-        padding: '12px',
-        minWidth: '180px',
-        boxShadow: selected ? `0 4px 12px ${getNodeColor(data.type)}33` : '0 2px 8px rgba(0,0,0,0.1)',
+        border: `1px solid ${selected ? getNodeTypeColor(data.type) : '#e8e8e8'}`,
+        borderRadius: '4px',
+        minWidth: '200px',
+        maxWidth: '300px',
+        boxShadow: selected ? `0 2px 8px ${getNodeTypeColor(data.type)}33` : '0 1px 4px rgba(0,0,0,0.1)',
         transition: 'all 0.2s ease',
+        position: 'relative',
       }}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
     >
+      {/* 工具提示 */}
+      {showTooltip && !isCollapsed && (
+        <div
+          className="node-tooltip"
+          style={{
+            position: 'absolute',
+            top: '-10px',
+            right: '-10px',
+            background: 'rgba(0,0,0,0.8)',
+            color: '#fff',
+            padding: '6px 10px',
+            borderRadius: '4px',
+            fontSize: '11px',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+            pointerEvents: 'none',
+          }}
+        >
+          点击标题栏可收起/展开
+        </div>
+      )}
+
       {/* 输入连接点 */}
       <Handle
         type="target"
         position={Position.Left}
         style={{
-          background: getNodeColor(data.type),
-          width: '10px',
-          height: '10px',
+          background: '#d9d9d9',
+          width: '8px',
+          height: '8px',
           border: '2px solid #fff',
+          left: '-5px',
         }}
       />
       
-      {/* 节点内容 */}
-      <div className="node-header" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-        <span style={{ fontSize: '20px', marginRight: '8px' }}>
-          {getNodeIcon(data.type)}
-        </span>
-        <div style={{ fontSize: '14px', fontWeight: '600', color: '#262626' }}>
+      {/* 节点头部 */}
+      <div 
+        className="node-header" 
+        style={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          padding: '8px 12px',
+          backgroundColor: '#fafafa',
+          borderBottom: '1px solid #e8e8e8',
+          cursor: 'pointer'
+        }}
+        onClick={toggleCollapsed}
+      >
+        {/* 收起/展开三角 */}
+        <div 
+          className="collapse-toggle"
+          style={{
+            width: '12px',
+            height: '12px',
+            marginRight: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '10px',
+            color: '#666',
+            transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s ease',
+          }}
+        >
+          ▼
+        </div>
+        
+        {/* 节点名称 */}
+        <div style={{ 
+          fontSize: '13px', 
+          fontWeight: '500', 
+          color: '#262626',
+          flex: 1
+        }}>
           {data.label}
         </div>
+        
+        {/* 工具标识在标题栏右侧 */}
+        {data.tool && (
+          <span 
+            className="tool-badge"
+            style={{
+              display: 'inline-block',
+              backgroundColor: getToolColor(data.tool),
+              color: '#fff',
+              fontSize: '11px',
+              fontWeight: '500',
+              padding: '2px 8px',
+              borderRadius: '12px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              marginLeft: '8px',
+            }}
+          >
+            {data.tool}
+          </span>
+        )}
       </div>
       
-      <div 
-        className="node-description" 
-        style={{ 
-          fontSize: '12px', 
-          color: '#8c8c8c',
-          lineHeight: '1.4'
-        }}
-      >
-        {data.description}
-      </div>
+      {/* 节点内容（可收起） */}
+      {!isCollapsed && (
+        <div style={{ padding: '12px' }}>
+          {/* 描述 */}
+          {data.description && (
+            <div 
+              className="node-description" 
+              style={{ 
+                fontSize: '12px', 
+                color: '#666',
+                lineHeight: '1.4',
+                marginBottom: '8px'
+              }}
+            >
+              {data.description}
+            </div>
+          )}
+          
+          {/* 子操作 */}
+          {data.subActions && data.subActions.length > 0 && (
+            <div className="sub-actions">
+              {data.subActions.map((action, index) => (
+                <div 
+                  key={index}
+                  className="sub-action"
+                  style={{
+                    fontSize: '11px',
+                    color: '#1890ff',
+                    padding: '2px 0',
+                    cursor: 'pointer',
+                  }}
+                >
+                  • {action}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* 输出连接点 */}
       <Handle
         type="source"
         position={Position.Right}
         style={{
-          background: getNodeColor(data.type),
-          width: '10px',
-          height: '10px',
+          background: '#d9d9d9',
+          width: '8px',
+          height: '8px',
           border: '2px solid #fff',
+          right: '-5px',
         }}
       />
     </div>

@@ -7,6 +7,7 @@ interface NodeType {
   icon: string;
   description: string;
   color: string;
+  tool: string;
 }
 
 const nodeTypes: NodeType[] = [
@@ -15,8 +16,9 @@ const nodeTypes: NodeType[] = [
     label: '需求管理及同步',
     type: 'requirement',
     icon: '📋',
-    description: '管理和同步系统需求',
+    description: '系统需求管理和同步',
     color: '#1890ff',
+    tool: 'Polarion',
   },
   {
     id: 'architecture',
@@ -25,30 +27,34 @@ const nodeTypes: NodeType[] = [
     icon: '🏗️',
     description: '系统功能和架构设计',
     color: '#52c41a',
+    tool: 'MATLAB',
   },
   {
-    id: 'simulation',
-    label: '数据集成仿真',
+    id: 'simulation1',
+    label: '系统集成仿真',
     type: 'simulation',
     icon: '⚡',
-    description: '数据集成和仿真验证',
-    color: '#faad14',
+    description: '系统集成仿真验证',
+    color: '#722ed1',
+    tool: 'M-works',
   },
   {
-    id: 'analysis',
-    label: '数据分析处理',
+    id: 'simulation2',
+    label: '系统集成仿真',
     type: 'analysis',
     icon: '📊',
-    description: '数据分析和处理模块',
-    color: '#722ed1',
+    description: '多力学场耦合分析',
+    color: '#52c41a',
+    tool: 'DOE',
   },
   {
     id: 'optimization',
-    label: '优化算法模块',
+    label: '参数优化',
     type: 'optimization',
     icon: '🎯',
-    description: '系统优化和算法模块',
+    description: '参数优化和算法设计',
     color: '#f5222d',
+    tool: 'MATLAB',
   },
   {
     id: 'validation',
@@ -57,13 +63,18 @@ const nodeTypes: NodeType[] = [
     icon: '✅',
     description: '系统验证和测试模块',
     color: '#13c2c2',
+    tool: 'DOORS',
   },
 ];
 
 const NodeLibrary: React.FC = () => {
-  const onDragStart = (event: React.DragEvent, nodeType: string, label: string) => {
-    event.dataTransfer.setData('application/reactflow', nodeType);
-    event.dataTransfer.setData('application/label', label);
+  const onDragStart = (event: React.DragEvent, nodeType: NodeType) => {
+    event.dataTransfer.setData('application/reactflow', JSON.stringify({
+      type: nodeType.type,
+      label: nodeType.label,
+      description: nodeType.description,
+      tool: nodeType.tool,
+    }));
     event.dataTransfer.effectAllowed = 'move';
   };
 
@@ -80,7 +91,7 @@ const NodeLibrary: React.FC = () => {
             key={nodeType.id}
             className="library-node"
             draggable
-            onDragStart={(e) => onDragStart(e, nodeType.type, nodeType.label)}
+            onDragStart={(e) => onDragStart(e, nodeType)}
             style={{
               padding: '12px',
               margin: '8px 0',

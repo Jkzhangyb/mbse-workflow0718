@@ -28,50 +28,139 @@ const initialNodes: Node[] = [
   {
     id: '1',
     type: 'custom',
-    position: { x: 250, y: 100 },
+    position: { x: 150, y: 100 },
     data: { 
       label: '需求管理及同步',
       type: 'requirement',
-      description: '管理和同步系统需求'
+      description: '从系统规格书创建和管理需求项',
+      tool: 'Polarion',
+      subActions: ['创建需求'],
+      collapsed: false
     },
   },
   {
     id: '2',
     type: 'custom',
-    position: { x: 450, y: 200 },
+    position: { x: 400, y: 180 },
     data: { 
       label: '功能与架构设计',
       type: 'architecture',
-      description: '系统功能和架构设计'
+      description: '基于需求进行系统功能和架构设计',
+      tool: 'Polarion-EA',
+      subActions: ['需求同步'],
+      collapsed: false
     },
   },
   {
     id: '3',
     type: 'custom',
-    position: { x: 650, y: 150 },
+    position: { x: 650, y: 100 },
     data: { 
-      label: '数据集成仿真',
+      label: '功能与架构设计',
+      type: 'architecture',
+      description: '进行功能与架构的详细设计',
+      tool: 'EA',
+      subActions: ['功能&逻辑设计'],
+      collapsed: false
+    },
+  },
+  {
+    id: '4',
+    type: 'custom',
+    position: { x: 650, y: 280 },
+    data: { 
+      label: '功能与架构设计',
+      type: 'architecture',
+      description: '架构转换为可仿真的模型',
+      tool: 'SSP',
+      subActions: ['架构转换'],
+      collapsed: false
+    },
+  },
+  {
+    id: '5',
+    type: 'custom',
+    position: { x: 650, y: 280 },
+    data: { 
+      label: '系统集成仿真',
       type: 'simulation',
-      description: '数据集成和仿真验证'
+      description: '系统综合仿真验证',
+      tool: 'SSP-Modelica',
+      subActions: ['架构同步'],
+      collapsed: false
+    },
+  },
+  {
+    id: '6',
+    type: 'custom',
+    position: { x: 650, y: 280 },
+    data: { 
+      label: '系统集成仿真',
+      type: 'simulation',
+      description: '进行仿真配置定义',
+      tool: 'M-works',
+      subActions: ['仿真配置'],
+      collapsed: false
+    },
+  },
+  {
+    id: '7',
+    type: 'custom',
+    position: { x: 650, y: 280 },
+    data: { 
+      label: '系统仿真集成',
+      type: 'simulation',
+      description: '实验设计与多方案分析',
+      tool: 'DOE',
+      subActions: ['架构转换'],
+      collapsed: false
     },
   },
 ];
 
 const initialEdges: Edge[] = [
-  {
+    {
     id: 'e1-2',
     source: '1',
     target: '2',
     type: 'smoothstep',
     animated: true,
-  },
-  {
+    },
+    {
     id: 'e2-3',
     source: '2',
     target: '3',
     type: 'smoothstep',
     animated: true,
-  },
+    },
+    {
+    id: 'e2-4',
+    source: '3',
+    target: '4',
+    type: 'smoothstep',
+    animated: true,
+    },
+    {
+    id: 'e2-4',
+    source: '4',
+    target: '5',
+    type: 'smoothstep',
+    animated: true,
+    },
+    {
+    id: 'e2-4',
+    source: '5',
+    target: '6',
+    type: 'smoothstep',
+    animated: true,
+    },
+    {
+    id: 'e2-4',
+    source: '6',
+    target: '7',
+    type: 'smoothstep',
+    animated: true,
+    },
 ];
 
 interface WorkflowCanvasProps {
@@ -125,29 +214,36 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
     (event: React.DragEvent) => {
       event.preventDefault();
       
-      const type = event.dataTransfer.getData('application/reactflow');
-      const label = event.dataTransfer.getData('application/label');
+      const nodeDataStr = event.dataTransfer.getData('application/reactflow');
       
-      if (!type || !reactFlowWrapper.current) return;
+      if (!nodeDataStr || !reactFlowWrapper.current) return;
 
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const position = {
-        x: event.clientX - reactFlowBounds.left - 100,
-        y: event.clientY - reactFlowBounds.top - 20,
-      };
+      try {
+        const nodeData = JSON.parse(nodeDataStr);
+        const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+        const position = {
+          x: event.clientX - reactFlowBounds.left - 100,
+          y: event.clientY - reactFlowBounds.top - 20,
+        };
 
-      const newNode: Node = {
-        id: `${Date.now()}`,
-        type: 'custom',
-        position,
-        data: { 
-          label,
-          type,
-          description: `${label}节点描述`
-        },
-      };
+        const newNode: Node = {
+          id: `${Date.now()}`,
+          type: 'custom',
+          position,
+          data: { 
+            label: nodeData.label,
+            type: nodeData.type,
+            description: nodeData.description,
+            tool: nodeData.tool,
+            subActions: [`${nodeData.label}操作1`, `${nodeData.label}操作2`],
+            collapsed: false
+          },
+        };
 
-      setNodes((nds) => nds.concat(newNode));
+        setNodes((nds) => nds.concat(newNode));
+      } catch (error) {
+        console.error('解析节点数据失败:', error);
+      }
     },
     [setNodes]
   );
