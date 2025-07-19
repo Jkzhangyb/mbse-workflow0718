@@ -1,83 +1,107 @@
-import React, { memo } from 'react';
-import { Handle, Position, type NodeProps } from 'reactflow';
-import { Card, Tag } from 'antd';
-import { CheckCircleOutlined, ClockCircleOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import React from 'react';
+import { Handle, Position } from '@reactflow/core';
+import type { NodeProps } from '@reactflow/core';
 
 interface CustomNodeData {
   label: string;
-  description?: string;
-  status?: 'pending' | 'running' | 'completed' | 'error';
-  category?: string;
-  color?: string;
+  type: string;
+  description: string;
 }
 
 const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => {
-  const getStatusIcon = (status?: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircleOutlined style={{ color: '#52c41a' }} />;
-      case 'running':
-        return <ClockCircleOutlined style={{ color: '#1890ff' }} />;
-      case 'error':
-        return <ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />;
+  const getNodeIcon = (type: string) => {
+    switch (type) {
+      case 'requirement':
+        return '📋';
+      case 'architecture':
+        return '🏗️';
+      case 'simulation':
+        return '⚡';
+      case 'analysis':
+        return '📊';
+      case 'optimization':
+        return '🎯';
       default:
-        return null;
+        return '⚙️';
+    }
+  };
+
+  const getNodeColor = (type: string) => {
+    switch (type) {
+      case 'requirement':
+        return '#1890ff';
+      case 'architecture':
+        return '#52c41a';
+      case 'simulation':
+        return '#faad14';
+      case 'analysis':
+        return '#722ed1';
+      case 'optimization':
+        return '#f5222d';
+      default:
+        return '#8c8c8c';
     }
   };
 
   return (
-    <>
+    <div 
+      className={`custom-node ${selected ? 'selected' : ''}`}
+      style={{
+        backgroundColor: '#fff',
+        border: `2px solid ${selected ? getNodeColor(data.type) : '#d9d9d9'}`,
+        borderRadius: '8px',
+        padding: '12px',
+        minWidth: '180px',
+        boxShadow: selected ? `0 4px 12px ${getNodeColor(data.type)}33` : '0 2px 8px rgba(0,0,0,0.1)',
+        transition: 'all 0.2s ease',
+      }}
+    >
+      {/* 输入连接点 */}
       <Handle
         type="target"
-        position={Position.Top}
-        style={{ background: '#555' }}
-      />
-      <Card
-        size="small"
+        position={Position.Left}
         style={{
-          minWidth: 200,
-          border: selected ? '2px solid #1890ff' : `2px solid ${data.color || '#d9d9d9'}`,
-          borderRadius: 8,
-          boxShadow: selected ? '0 4px 12px rgba(24, 144, 255, 0.3)' : '0 2px 8px rgba(0,0,0,0.1)',
-          backgroundColor: '#fff',
+          background: getNodeColor(data.type),
+          width: '10px',
+          height: '10px',
+          border: '2px solid #fff',
         }}
-        bodyStyle={{ padding: '12px' }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <div style={{ 
-            fontWeight: 600, 
-            fontSize: '14px',
-            color: '#262626',
-            flex: 1
-          }}>
-            {data.label}
-          </div>
-          {getStatusIcon(data.status)}
+      />
+      
+      {/* 节点内容 */}
+      <div className="node-header" style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+        <span style={{ fontSize: '20px', marginRight: '8px' }}>
+          {getNodeIcon(data.type)}
+        </span>
+        <div style={{ fontSize: '14px', fontWeight: '600', color: '#262626' }}>
+          {data.label}
         </div>
-        
-        {data.category && (
-          <Tag color={data.color} style={{ marginBottom: 4 }}>
-            {data.category}
-          </Tag>
-        )}
-        
-        {data.description && (
-          <div style={{ 
-            fontSize: '12px', 
-            color: '#8c8c8c',
-            lineHeight: '16px'
-          }}>
-            {data.description}
-          </div>
-        )}
-      </Card>
+      </div>
+      
+      <div 
+        className="node-description" 
+        style={{ 
+          fontSize: '12px', 
+          color: '#8c8c8c',
+          lineHeight: '1.4'
+        }}
+      >
+        {data.description}
+      </div>
+      
+      {/* 输出连接点 */}
       <Handle
         type="source"
-        position={Position.Bottom}
-        style={{ background: '#555' }}
+        position={Position.Right}
+        style={{
+          background: getNodeColor(data.type),
+          width: '10px',
+          height: '10px',
+          border: '2px solid #fff',
+        }}
       />
-    </>
+    </div>
   );
 };
 
-export default memo(CustomNode);
+export default CustomNode;

@@ -1,82 +1,103 @@
-import React from 'react';
-import { Menu } from 'antd';
-import { 
-  CopyOutlined, 
-  DeleteOutlined, 
-  EditOutlined, 
-  InfoCircleOutlined 
-} from '@ant-design/icons';
-import type { MenuProps } from 'antd';
+import React, { useEffect } from 'react';
 
 interface ContextMenuProps {
   visible: boolean;
   x: number;
   y: number;
-  nodeId: string | null;
-  onMenuClick: (action: string, nodeId: string) => void;
-  onVisibleChange: (visible: boolean) => void;
+  onClose: () => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
   visible,
   x,
   y,
-  nodeId,
-  onMenuClick,
-  onVisibleChange
+  onClose,
+  onDelete,
+  onDuplicate,
 }) => {
-  if (!nodeId) return null;
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (visible) {
+        onClose();
+      }
+    };
 
-  const menuItems: MenuProps['items'] = [
-    {
-      key: 'edit',
-      label: '编辑节点',
-      icon: <EditOutlined />,
-      onClick: () => onMenuClick('edit', nodeId)
-    },
-    {
-      key: 'copy',
-      label: '复制节点',
-      icon: <CopyOutlined />,
-      onClick: () => onMenuClick('copy', nodeId)
-    },
-    {
-      key: 'info',
-      label: '节点信息',
-      icon: <InfoCircleOutlined />,
-      onClick: () => onMenuClick('info', nodeId)
-    },
-    {
-      type: 'divider'
-    },
-    {
-      key: 'delete',
-      label: '删除节点',
-      icon: <DeleteOutlined />,
-      danger: true,
-      onClick: () => onMenuClick('delete', nodeId)
-    }
-  ];
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [visible, onClose]);
+
+  if (!visible) return null;
 
   return (
     <div
+      className="context-menu"
       style={{
         position: 'fixed',
         top: y,
         left: x,
-        zIndex: 9999,
-        display: visible ? 'block' : 'none'
+        backgroundColor: '#fff',
+        border: '1px solid #d9d9d9',
+        borderRadius: '6px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        zIndex: 1000,
+        minWidth: '120px',
+        padding: '4px 0',
       }}
-      onMouseLeave={() => onVisibleChange(false)}
+      onClick={(e) => e.stopPropagation()}
     >
-      <Menu
-        items={menuItems}
-        style={{
-          border: '1px solid #d9d9d9',
-          borderRadius: 6,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+      <div
+        className="context-menu-item"
+        onClick={() => {
+          onDuplicate();
+          onClose();
         }}
-      />
+        style={{
+          padding: '8px 16px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          color: '#262626',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#f5f5f5';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+      >
+        <span style={{ marginRight: '8px' }}>📋</span>
+        复制节点
+      </div>
+      
+      <div
+        className="context-menu-item"
+        onClick={() => {
+          onDelete();
+          onClose();
+        }}
+        style={{
+          padding: '8px 16px',
+          cursor: 'pointer',
+          fontSize: '14px',
+          color: '#ff4d4f',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = '#fff2f0';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+      >
+        <span style={{ marginRight: '8px' }}>🗑️</span>
+        删除节点
+      </div>
     </div>
   );
 };

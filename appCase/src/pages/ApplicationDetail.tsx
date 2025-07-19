@@ -1,4 +1,5 @@
 import React from 'react';
+import WorkflowCanvas from '../components/workflow/WorkflowCanvas';
 import './ApplicationDetail.scss';
 
 interface ApplicationDetailProps {
@@ -6,7 +7,11 @@ interface ApplicationDetailProps {
   onBack: () => void;
 }
 
+// 视图类型
+type ViewType = 'detail' | 'workflow';
+
 const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }) => {
+  const [currentView, setCurrentView] = React.useState<ViewType>('detail');
   const [simulationProgress, setSimulationProgress] = React.useState(67);
   const [isSimulationRunning, setIsSimulationRunning] = React.useState(false);
   const [tooltip, setTooltip] = React.useState<{
@@ -122,16 +127,28 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }
           <span className="breadcrumb-item" onClick={onBack}>应用中心</span>
           <span className="breadcrumb-separator">/</span>
           <span className="breadcrumb-item current">{appName}</span>
+          {currentView === 'workflow' && (
+            <>
+              <span className="breadcrumb-separator">/</span>
+              <span className="breadcrumb-item current">工作流定义</span>
+            </>
+          )}
         </div>
         <div className="breadcrumb-actions">
-          <button className="workflow-btn">打开工作流</button>
+          <button 
+            className="workflow-btn"
+            onClick={() => setCurrentView(currentView === 'detail' ? 'workflow' : 'detail')}
+          >
+            {currentView === 'detail' ? '打开工作流' : '返回详情'}
+          </button>
         </div>
       </div>
 
       {/* 主要内容区域 */}
-      <div className="detail-content">
-        {/* 参数设置 */}
-        <div className="parameter-section">
+      {currentView === 'detail' ? (
+        <div className="detail-content">
+          {/* 参数设置 */}
+          <div className="parameter-section">
           <div className="section-header">
             <h3>参数设置</h3>
             <button className="detail-btn">详细设置</button>
@@ -510,6 +527,11 @@ const ApplicationDetail: React.FC<ApplicationDetailProps> = ({ appName, onBack }
           </div>
         </div>
       </div>
+      ) : (
+        <div className="workflow-view">
+          <WorkflowCanvas appName={appName} />
+        </div>
+      )}
 
       {/* 全局Tooltip */}
       {tooltip.visible && (

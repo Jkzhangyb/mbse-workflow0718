@@ -651,6 +651,25 @@
   }
 }
 
+/* 工作流视图样式 */
+.workflow-view {
+  height: calc(100vh - 60px); /* 减去面包屑高度 */
+  
+  .workflow-canvas-container {
+    height: 100%;
+  }
+}
+
+/* 视图切换按钮样式增强 */
+.workflow-btn {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(24, 144, 255, 0.3);
+  }
+}
+
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .detail-content {

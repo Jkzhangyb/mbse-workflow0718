@@ -1,163 +1,166 @@
-import React, { useEffect } from 'react';
-import { Card, Form, Input, Select, Button, Space, Divider } from 'antd';
-import { DeleteOutlined, CopyOutlined } from '@ant-design/icons';
-import type { WorkflowNode } from '../../types/workflow';
+import React, { useState } from 'react';
+import type { Node } from '@reactflow/core';
 
 interface NodeConfigPanelProps {
-  selectedNode: WorkflowNode | null;
-  onNodeUpdate: (nodeId: string, updates: Partial<WorkflowNode>) => void;
-  onNodeDelete: (nodeId: string) => void;
-  onNodeCopy: (nodeId: string) => void;
+  node: Node;
   onClose: () => void;
+  onUpdate: (updatedNode: Node) => void;
 }
 
-const { TextArea } = Input;
-const { Option } = Select;
+const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpdate }) => {
+  const [label, setLabel] = useState(node.data.label || '');
+  const [description, setDescription] = useState(node.data.description || '');
 
-const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({
-  selectedNode,
-  onNodeUpdate,
-  onNodeDelete,
-  onNodeCopy,
-  onClose
-}) => {
-  const [form] = Form.useForm();
-
-  useEffect(() => {
-    if (selectedNode) {
-      const formData = {
-        label: selectedNode.data.label,
-        description: selectedNode.data.description || '',
-        status: selectedNode.data.status || 'pending',
-        ...selectedNode.data.config
-      };
-      form.setFieldsValue(formData);
-    }
-  }, [selectedNode, form]);
-
-  const handleFormChange = (_changedFields: any, allFields: any) => {
-    if (selectedNode) {
-      const { label, description, status, ...config } = allFields;
-      onNodeUpdate(selectedNode.id, {
-        data: {
-          ...selectedNode.data,
-          label,
-          description,
-          status,
-          config
-        }
-      });
-    }
+  const handleSave = () => {
+    const updatedNode = {
+      ...node,
+      data: {
+        ...node.data,
+        label,
+        description,
+      },
+    };
+    onUpdate(updatedNode);
+    onClose();
   };
 
-  const handleDelete = () => {
-    if (selectedNode) {
-      onNodeDelete(selectedNode.id);
-      onClose();
+  const getNodeIcon = (type: string) => {
+    switch (type) {
+      case 'requirement':
+        return '📋';
+      case 'architecture':
+        return '🏗️';
+      case 'simulation':
+        return '⚡';
+      case 'analysis':
+        return '📊';
+      case 'optimization':
+        return '🎯';
+      default:
+        return '⚙️';
     }
   };
-
-  const handleCopy = () => {
-    if (selectedNode) {
-      onNodeCopy(selectedNode.id);
-    }
-  };
-
-  if (!selectedNode) {
-    return (
-      <Card 
-        title="节点配置" 
-        size="small"
-        style={{ width: 300, height: '100%' }}
-        bodyStyle={{ padding: '16px', textAlign: 'center', color: '#8c8c8c' }}
-      >
-        请选择一个节点进行配置
-      </Card>
-    );
-  }
 
   return (
-    <Card
-      title="节点配置"
-      size="small"
-      style={{ width: 300, height: '100%', overflow: 'auto' }}
-      extra={
-        <Button type="text" size="small" onClick={onClose}>
-          ×
-        </Button>
-      }
-    >
-      <Form
-        form={form}
-        layout="vertical"
-        size="small"
-        onValuesChange={handleFormChange}
-      >
-        <Form.Item
-          label="节点名称"
-          name="label"
-          rules={[{ required: true, message: '请输入节点名称' }]}
+    <div className="node-config-panel">
+      <div className="config-header">
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: '20px', marginRight: '8px' }}>
+            {getNodeIcon(node.data.type)}
+          </span>
+          <h3>节点配置</h3>
+        </div>
+        <button 
+          className="close-btn"
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '18px',
+            cursor: 'pointer',
+            color: '#8c8c8c',
+            padding: '4px',
+          }}
         >
-          <Input placeholder="输入节点名称" />
-        </Form.Item>
+          ✕
+        </button>
+      </div>
 
-        <Form.Item label="描述" name="description">
-          <TextArea 
-            placeholder="输入节点描述" 
-            rows={3}
-            showCount
-            maxLength={200}
+      <div className="config-content">
+        <div className="config-group">
+          <label>节点名称</label>
+          <input
+            type="text"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="输入节点名称"
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #d9d9d9',
+              borderRadius: '6px',
+              fontSize: '14px',
+            }}
           />
-        </Form.Item>
+        </div>
 
-        <Form.Item label="状态" name="status">
-          <Select placeholder="选择状态">
-            <Option value="pending">待处理</Option>
-            <Option value="running">进行中</Option>
-            <Option value="completed">已完成</Option>
-            <Option value="error">错误</Option>
-          </Select>
-        </Form.Item>
+        <div className="config-group">
+          <label>节点描述</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="输入节点描述"
+            rows={4}
+            style={{
+              width: '100%',
+              padding: '8px 12px',
+              border: '1px solid #d9d9d9',
+              borderRadius: '6px',
+              fontSize: '14px',
+              resize: 'vertical',
+              minHeight: '80px',
+            }}
+          />
+        </div>
 
-        <Divider />
+        <div className="config-group">
+          <label>节点类型</label>
+          <div style={{
+            padding: '8px 12px',
+            backgroundColor: '#f5f5f5',
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: '#8c8c8c',
+          }}>
+            {node.data.type} (只读)
+          </div>
+        </div>
 
-        <Form.Item label="优先级" name="priority">
-          <Select placeholder="选择优先级">
-            <Option value="high">高</Option>
-            <Option value="medium">中</Option>
-            <Option value="low">低</Option>
-          </Select>
-        </Form.Item>
+        <div className="config-group">
+          <label>节点ID</label>
+          <div style={{
+            padding: '8px 12px',
+            backgroundColor: '#f5f5f5',
+            borderRadius: '6px',
+            fontSize: '14px',
+            color: '#8c8c8c',
+            fontFamily: 'monospace',
+          }}>
+            {node.id}
+          </div>
+        </div>
+      </div>
 
-        <Form.Item label="负责人" name="assignee">
-          <Input placeholder="输入负责人" />
-        </Form.Item>
-
-        <Form.Item label="预计时长(小时)" name="estimatedHours">
-          <Input type="number" placeholder="输入预计时长" />
-        </Form.Item>
-
-        <Divider />
-        
-        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-          <Button 
-            icon={<CopyOutlined />} 
-            onClick={handleCopy}
-            size="small"
-          >
-            复制
-          </Button>
-          <Button 
-            danger 
-            icon={<DeleteOutlined />} 
-            onClick={handleDelete}
-            size="small"
-          >
-            删除
-          </Button>
-        </Space>
-      </Form>
-    </Card>
+      <div className="config-actions">
+        <button
+          onClick={onClose}
+          style={{
+            padding: '8px 16px',
+            border: '1px solid #d9d9d9',
+            borderRadius: '6px',
+            backgroundColor: '#fff',
+            color: '#595959',
+            cursor: 'pointer',
+            marginRight: '8px',
+          }}
+        >
+          取消
+        </button>
+        <button
+          onClick={handleSave}
+          style={{
+            padding: '8px 16px',
+            border: 'none',
+            borderRadius: '6px',
+            backgroundColor: '#1890ff',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          保存
+        </button>
+      </div>
+    </div>
   );
 };
 
