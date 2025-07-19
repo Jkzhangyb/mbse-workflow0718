@@ -23,6 +23,15 @@ const getCurrentDateTime = (): string => {
 };
 
 const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpdate }) => {
+  const inputStyle = {
+    width: '100%',
+    padding: '8px',
+    border: '1px solid #d9d9d9',
+    borderRadius: '4px',
+    fontSize: '14px',
+    boxSizing: 'border-box' as const,
+  };
+
   const [activeTab, setActiveTab] = useState<'basic' | 'sync'>('basic');
   const [formData, setFormData] = useState({
     // 基础信息
@@ -38,7 +47,14 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
     syncSource: node.data.syncSource || '',
     syncFrequency: node.data.syncFrequency || 'manual',
     lastSyncTime: node.data.lastSyncTime || '',
-    syncStatus: node.data.syncStatus || 'pending'
+    syncStatus: node.data.syncStatus || 'pending',
+    syncSourceType: node.data.syncSourceType || 'remote', // 新增字段
+    serviceAddress: node.data.serviceAddress || '',
+    username: node.data.username || '',
+    password: node.data.password || '',
+    localFile: null, // 本地上传文件
+    platformType: '', // 新增字段
+    serviceUrl: ''   // 新增字段
   });
 
   // 监听节点变化，更新表单数据
@@ -55,16 +71,35 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
       syncSource: node.data.syncSource || '',
       syncFrequency: node.data.syncFrequency || 'manual',
       lastSyncTime: node.data.lastSyncTime || '',
-      syncStatus: node.data.syncStatus || 'pending'
+      syncStatus: node.data.syncStatus || 'pending',
+      syncSourceType: node.data.syncSourceType || 'remote', // 新增字段
+      serviceAddress: node.data.serviceAddress || '',
+      username: node.data.username || '',
+      password: node.data.password || '',
+      localFile: null, // 本地上传文件
+      platformType: '', // 新增字段
+      serviceUrl: ''   // 新增字段
     });
   }, [node]);
 
   // 处理表单字段变化
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | File | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+
+    if (field === 'customName') {
+      const updatedNode = {
+        ...node,
+        data: {
+          ...node.data,
+          customName: value,
+          label: node.data.label // 确保保留 label 字段
+        }
+      };
+      onUpdate(updatedNode);
+    }
   };
 
   // 保存配置
@@ -72,11 +107,10 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
     const updatedNode = {
       ...node,
       data: {
-        ...node.data,
-        ...formData
+        ...formData // 确保保存所有字段，包括 customName
       }
     };
-    onUpdate(updatedNode);
+    onUpdate(updatedNode); // 通知画布更新节点数据
     // 不关闭面板，让用户可以继续编辑
     // onClose();
   };
@@ -95,7 +129,14 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
       syncSource: node.data.syncSource || '',
       syncFrequency: node.data.syncFrequency || 'manual',
       lastSyncTime: node.data.lastSyncTime || '',
-      syncStatus: node.data.syncStatus || 'pending'
+      syncStatus: node.data.syncStatus || 'pending',
+      syncSourceType: node.data.syncSourceType || 'remote', // 新增字段
+      serviceAddress: node.data.serviceAddress || '',
+      username: node.data.username || '',
+      password: node.data.password || '',
+      localFile: null, // 本地上传文件
+      platformType: '', // 新增字段
+      serviceUrl: ''   // 新增字段
     });
   };
 
@@ -226,7 +267,7 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
 
         {activeTab === 'sync' && (
           <div className="sync-config">
-            {/* 启用同步 */}
+            {/* 启用需求同步 */}
             <div className="form-group">
               <label className="checkbox-label">
                 <input
@@ -239,73 +280,83 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
               </label>
             </div>
 
-            {formData.syncEnabled && (
+            {/* 需求源类型 */}
+            <div className="form-group">
+              <label>需求源类型</label>
+              <select
+                value={formData.syncSourceType || ''}
+                onChange={(e) => handleInputChange('syncSourceType', e.target.value)}
+              >
+                <option value="">请选择需求源类型</option>
+                <option value="remote">远程同步</option>
+                <option value="local">本地上传</option>
+              </select>
+            </div>
+
+            {/* 根据需求源类型动态显示配置 */}
+            {formData.syncSourceType === 'remote' && (
               <>
-                {/* 同步源 */}
+                {/* 平台类型 */}
                 <div className="form-group">
-                  <label>同步源</label>
+                  <label>平台类型</label>
                   <select
-                    value={formData.syncSource}
-                    onChange={(e) => handleInputChange('syncSource', e.target.value)}
+                    value={formData.platformType || ''}
+                    onChange={(e) => handleInputChange('platformType', e.target.value)}
                   >
-                    <option value="">请选择同步源</option>
+                    <option value="">请选择平台类型</option>
                     <option value="polarion">Polarion</option>
-                    <option value="doors">IBM DOORS</option>
-                    <option value="jama">Jama Connect</option>
-                    <option value="azure-devops">Azure DevOps</option>
+                    <option value="teamcenter">Teamcenter</option>
+                    <option value="oslc">OSLC</option>
                   </select>
                 </div>
 
-                {/* 同步频率 */}
+                {/* 服务地址 */}
                 <div className="form-group">
-                  <label>同步频率</label>
-                  <select
-                    value={formData.syncFrequency}
-                    onChange={(e) => handleInputChange('syncFrequency', e.target.value)}
-                  >
-                    <option value="manual">手动同步</option>
-                    <option value="hourly">每小时</option>
-                    <option value="daily">每日</option>
-                    <option value="weekly">每周</option>
-                  </select>
-                </div>
-
-                {/* 最后同步时间 */}
-                <div className="form-group">
-                  <label>最后同步时间</label>
+                  <label>服务地址</label>
                   <input
                     type="text"
-                    value={formData.lastSyncTime}
-                    readOnly
-                    className="readonly-input"
-                    placeholder="暂无同步记录"
+                    value={formData.serviceAddress}
+                    onChange={(e) => handleInputChange('serviceAddress', e.target.value)}
+                    placeholder="请输入服务地址"
+                    style={inputStyle} // 应用统一样式
                   />
                 </div>
 
-                {/* 同步状态 */}
+                {/* 用户名 */}
                 <div className="form-group">
-                  <label>同步状态</label>
-                  <div className="sync-status">
-                    <span className={`status-indicator ${formData.syncStatus}`}>
-                      {formData.syncStatus === 'success' && '已同步'}
-                      {formData.syncStatus === 'error' && '同步失败'}
-                      {formData.syncStatus === 'pending' && '待同步'}
-                      {formData.syncStatus === 'syncing' && '同步中'}
-                    </span>
-                    <button 
-                      className="sync-now-btn"
-                      onClick={() => {
-                        // 这里可以触发实际的同步逻辑
-                        handleInputChange('syncStatus', 'syncing');
-                        handleInputChange('lastSyncTime', getCurrentDateTime());
-                        setTimeout(() => {
-                          handleInputChange('syncStatus', 'success');
-                        }, 2000);
-                      }}
-                    >
-                      立即同步
-                    </button>
-                  </div>
+                  <label>用户名</label>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => handleInputChange('username', e.target.value)}
+                    placeholder="请输入用户名"
+                    style={inputStyle} // 应用统一样式
+                  />
+                </div>
+
+                {/* 密码 */}
+                <div className="form-group">
+                  <label>密码</label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="请输入密码"
+                    style={inputStyle} // 应用统一样式，与用户名输入框一致
+                  />
+                </div>
+              </>
+            )}
+
+            {formData.syncSourceType === 'local' && (
+              <>
+                {/* 本地上传 */}
+                <div className="form-group">
+                  <label>本地上传</label>
+                  <input
+                    type="file"
+                    onChange={(e) => handleInputChange('localFile', e.target.files?.[0] || null)} // 确保 undefined 转换为 null
+                  />
                 </div>
               </>
             )}
