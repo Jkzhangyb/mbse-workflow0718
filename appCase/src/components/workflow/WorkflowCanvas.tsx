@@ -13,7 +13,7 @@ import { MiniMap } from '@reactflow/minimap';
 import '@reactflow/core/dist/style.css';
 
 import CustomNode from './CustomNode';
-import NodeLibrary from './NodeLibrary';
+// import NodeLibrary from './NodeLibrary';
 import NodeConfigPanel from './NodeConfigPanel';
 import ContextMenu from './ContextMenu';
 import './WorkflowCanvas.scss';
@@ -28,7 +28,7 @@ const initialNodes: Node[] = [
   {
     id: '1',
     type: 'custom',
-    position: { x: 150, y: 100 },
+    position: { x: 50, y: 150 },
     data: { 
       label: '需求管理及同步',
       type: 'requirement',
@@ -41,7 +41,7 @@ const initialNodes: Node[] = [
   {
     id: '2',
     type: 'custom',
-    position: { x: 400, y: 180 },
+    position: { x: 450, y: 150 },
     data: { 
       label: '功能与架构设计',
       type: 'architecture',
@@ -54,7 +54,7 @@ const initialNodes: Node[] = [
   {
     id: '3',
     type: 'custom',
-    position: { x: 650, y: 100 },
+    position: { x: 450, y: 350 },
     data: { 
       label: '功能与架构设计',
       type: 'architecture',
@@ -67,7 +67,7 @@ const initialNodes: Node[] = [
   {
     id: '4',
     type: 'custom',
-    position: { x: 650, y: 280 },
+    position: { x: 450, y: 550 },
     data: { 
       label: '功能与架构设计',
       type: 'architecture',
@@ -80,7 +80,7 @@ const initialNodes: Node[] = [
   {
     id: '5',
     type: 'custom',
-    position: { x: 650, y: 280 },
+    position: { x: 850, y: 150 },
     data: { 
       label: '系统集成仿真',
       type: 'simulation',
@@ -93,7 +93,7 @@ const initialNodes: Node[] = [
   {
     id: '6',
     type: 'custom',
-    position: { x: 650, y: 280 },
+    position: { x: 850, y: 350 },
     data: { 
       label: '系统集成仿真',
       type: 'simulation',
@@ -106,7 +106,7 @@ const initialNodes: Node[] = [
   {
     id: '7',
     type: 'custom',
-    position: { x: 650, y: 280 },
+    position: { x: 850, y: 550 },
     data: { 
       label: '系统仿真集成',
       type: 'simulation',
@@ -119,48 +119,48 @@ const initialNodes: Node[] = [
 ];
 
 const initialEdges: Edge[] = [
-    {
+  {
     id: 'e1-2',
     source: '1',
     target: '2',
     type: 'smoothstep',
     animated: true,
-    },
-    {
+  },
+  {
     id: 'e2-3',
     source: '2',
     target: '3',
     type: 'smoothstep',
     animated: true,
-    },
-    {
-    id: 'e2-4',
+  },
+  {
+    id: 'e3-4',
     source: '3',
     target: '4',
     type: 'smoothstep',
     animated: true,
-    },
-    {
-    id: 'e2-4',
+  },
+  {
+    id: 'e4-5',
     source: '4',
     target: '5',
     type: 'smoothstep',
     animated: true,
-    },
-    {
-    id: 'e2-4',
+  },
+  {
+    id: 'e5-6',
     source: '5',
     target: '6',
     type: 'smoothstep',
     animated: true,
-    },
-    {
-    id: 'e2-4',
+  },
+  {
+    id: 'e6-7',
     source: '6',
     target: '7',
     type: 'smoothstep',
     animated: true,
-    },
+  },
 ];
 
 interface WorkflowCanvasProps {
@@ -209,7 +209,8 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
     setContextMenu({ visible: false, x: 0, y: 0 });
   }, []);
 
-  // 拖拽添加新节点
+  // 拖拽添加新节点 - 暂时禁用
+  /*
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
@@ -252,6 +253,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
   }, []);
+  */
 
   // 关闭右键菜单
   const closeContextMenu = useCallback(() => {
@@ -285,8 +287,8 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
 
   return (
     <div className="workflow-canvas-container">
-      {/* 节点库 */}
-      <NodeLibrary />
+      {/* 节点库 - 暂时隐藏 */}
+      {/* <NodeLibrary /> */}
       
       {/* 工作流画布 */}
       <div className="workflow-canvas" ref={reactFlowWrapper}>
@@ -299,10 +301,11 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
           onNodeClick={onNodeClick}
           onNodeContextMenu={onNodeContextMenu}
           onPaneClick={onPaneClick}
-          onDrop={onDrop}
-          onDragOver={onDragOver}
+          // onDrop={onDrop}
+          // onDragOver={onDragOver}
           nodeTypes={nodeTypes}
           connectionMode={ConnectionMode.Loose}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.7 }}
           fitView
         >
           <Background />

@@ -19,13 +19,21 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => 
     switch (tool?.toLowerCase()) {
       case 'polarion':
         return '#1890ff';
+      case 'polarion-ea':
+        return '#52c41a';
       case 'ea':
-      case 'simulink':
-        return '#e97627';
+        return '#fa8c16';
+      case 'ssp':
+        return '#52c41a';
+      case 'ssp-modelica':
+        return '#52c41a';
       case 'm-works':
         return '#722ed1';
       case 'doe':
         return '#52c41a';
+      case 'matlab':
+      case 'simulink':
+        return '#e97627';
       case 'ansys':
         return '#ffb800';
       case 'doors':
@@ -65,8 +73,8 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => 
         backgroundColor: '#fff',
         border: `1px solid ${selected ? getNodeTypeColor(data.type) : '#e8e8e8'}`,
         borderRadius: '4px',
-        minWidth: '200px',
-        maxWidth: '300px',
+        width: '240px',
+        minHeight: isCollapsed ? '40px' : '120px',
         boxShadow: selected ? `0 2px 8px ${getNodeTypeColor(data.type)}33` : '0 1px 4px rgba(0,0,0,0.1)',
         transition: 'all 0.2s ease',
         position: 'relative',
