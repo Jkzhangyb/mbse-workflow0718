@@ -1,0 +1,162 @@
+// 工作流画布样式
+.workflow-canvas {
+  height: 100%;
+  
+  .react-flow__node-custom {
+    border-radius: 8px;
+    
+    &.selected {
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+    }
+  }
+  
+  .react-flow__edge {
+    &.selected {
+      stroke: #1890ff;
+      stroke-width: 2px;
+    }
+  }
+  
+  .react-flow__controls {
+    button {
+      border-radius: 4px;
+      border: 1px solid #d9d9d9;
+      
+      &:hover {
+        border-color: #1890ff;
+        color: #1890ff;
+      }
+    }
+  }
+  
+  .react-flow__minimap {
+    border: 1px solid #d9d9d9;
+    border-radius: 6px;
+    background-color: #fafafa;
+  }
+  
+  .react-flow__background {
+    background-color: #f8f9fa;
+  }
+}
+
+// 节点库样式
+.node-library {
+  .node-item {
+    transition: all 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// 节点配置面板样式
+.node-config-panel {
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+  
+  .ant-form-item-label > label {
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .ant-input,
+  .ant-select-selector,
+  .ant-input-number {
+    font-size: 12px;
+  }
+}
+
+// 上下文菜单样式
+.workflow-context-menu {
+  .ant-menu {
+    min-width: 140px;
+    
+    .ant-menu-item {
+      font-size: 12px;
+      line-height: 32px;
+      height: 32px;
+      
+      &:hover {
+        background-color: #f5f5f5;
+      }
+    }
+  }
+}
+
+// 面包屑和工具栏样式
+.workflow-header {
+  .ant-breadcrumb {
+    .ant-breadcrumb-link {
+      color: #8c8c8c;
+      
+      &:hover {
+        color: #1890ff;
+      }
+    }
+  }
+  
+  .workflow-actions {
+    .ant-btn {
+      font-size: 12px;
+      
+      &.ant-btn-primary {
+        box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
+      }
+    }
+  }
+}
+
+// 响应式适配
+@media (max-width: 1200px) {
+  .workflow-canvas {
+    .node-library {
+      width: 200px;
+    }
+    
+    .node-config-panel {
+      width: 250px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .workflow-canvas {
+    .node-library,
+    .node-config-panel {
+      position: absolute;
+      z-index: 10;
+      height: calc(100% - 80px);
+      top: 80px;
+      background: white;
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .node-library {
+      left: -250px;
+      width: 250px;
+      transition: left 0.3s ease;
+      
+      &.visible {
+        left: 0;
+      }
+    }
+    
+    .node-config-panel {
+      right: -300px;
+      width: 300px;
+      transition: right 0.3s ease;
+      
+      &.visible {
+        right: 0;
+      }
+    }
+  }
+}
