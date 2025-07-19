@@ -72,6 +72,7 @@ const initialNodes: Node[] = [
     type: 'custom',
     position: { x: 50, y: 150 },
     data: { 
+      customName: "整车安全需求同步",
       label: '需求管理及同步',
       type: 'requirement',
       description: '从系统规格书创建和管理需求项',
@@ -85,6 +86,7 @@ const initialNodes: Node[] = [
     type: 'custom',
     position: { x: 450, y: 150 },
     data: { 
+      customName:"安全需求同步到EA",
       label: '功能与架构设计',
       type: 'architecture',
       description: '基于需求进行系统功能和架构设计',
@@ -98,6 +100,7 @@ const initialNodes: Node[] = [
     type: 'custom',
     position: { x: 450, y: 350 },
     data: { 
+      customName:"整车安全架构设计",
       label: '功能与架构设计',
       type: 'architecture',
       description: '进行功能与架构的详细设计',
@@ -111,6 +114,7 @@ const initialNodes: Node[] = [
     type: 'custom',
     position: { x: 450, y: 550 },
     data: { 
+      customName:"SSP架构转换",
       label: '功能与架构设计',
       type: 'architecture',
       description: '架构转换为可仿真的模型',
@@ -124,6 +128,7 @@ const initialNodes: Node[] = [
     type: 'custom',
     position: { x: 850, y: 150 },
     data: { 
+      customName:"SSP-Modelica",
       label: '系统集成仿真',
       type: 'simulation',
       description: '系统综合仿真验证',
@@ -137,6 +142,7 @@ const initialNodes: Node[] = [
     type: 'custom',
     position: { x: 850, y: 350 },
     data: { 
+      customName:"M-works仿真",
       label: '系统集成仿真',
       type: 'simulation',
       description: '进行仿真配置定义',
@@ -150,6 +156,7 @@ const initialNodes: Node[] = [
     type: 'custom',
     position: { x: 850, y: 550 },
     data: { 
+      customName:"DOE实验设计",
       label: '系统仿真集成',
       type: 'simulation',
       description: '实验设计与多方案分析',

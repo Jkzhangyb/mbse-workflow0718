@@ -26,7 +26,7 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
   const [activeTab, setActiveTab] = useState<'basic' | 'sync'>('basic');
   const [formData, setFormData] = useState({
     // 基础信息
-    label: node.data.label || '',
+    customName: node.data.customName || '', // 使用 customName 替代 label
     nodeId: node.data.nodeId || generateGUID(),
     description: node.data.description || '',
     priority: node.data.priority || 'high',
@@ -44,7 +44,7 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
   // 监听节点变化，更新表单数据
   useEffect(() => {
     setFormData({
-      label: node.data.label || '',
+      customName: node.data.customName || '', // 使用 customName 替代 label
       nodeId: node.data.nodeId || generateGUID(),
       description: node.data.description || '',
       priority: node.data.priority || 'high',
@@ -84,7 +84,7 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
   // 重置表单
   const handleReset = () => {
     setFormData({
-      label: node.data.label || '',
+      customName: node.data.customName || '', // 使用 customName 替代 label
       nodeId: node.data.nodeId || generateGUID(),
       description: node.data.description || '',
       priority: node.data.priority || 'high',
@@ -135,8 +135,8 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
               <label>节点名称</label>
               <input
                 type="text"
-                value={formData.label}
-                onChange={(e) => handleInputChange('label', e.target.value)}
+                value={formData.customName} // 确保使用 customName
+                onChange={(e) => handleInputChange('customName', e.target.value)}
                 placeholder="请输入节点名称"
               />
             </div>
