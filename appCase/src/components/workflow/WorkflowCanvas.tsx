@@ -310,7 +310,29 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
         >
           <Background />
           <Controls />
-          <MiniMap />
+          <MiniMap 
+            position="bottom-left"
+            nodeColor={(node) => {
+              switch (node.data?.type) {
+                case 'requirement': return '#52c41a';
+                case 'architecture': return '#1890ff';
+                case 'simulation': return '#fa8c16';
+                default: return '#666';
+              }
+            }}
+            maskColor="rgba(24, 144, 255, 0.2)"
+            pannable={true}
+            zoomable={true}
+            ariaLabel="画布导航缩略图"
+            style={{
+              backgroundColor: '#fff',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              width: 200,
+              height: 150,
+            }}
+          />
         </ReactFlow>
       </div>
 
