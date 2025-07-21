@@ -11,6 +11,7 @@ interface CustomNodeData {
   subActions?: string[];
   collapsed?: boolean;
   customName?: string; // 添加 customName 字段
+  executionStatus?: 'waiting' | 'running' | 'completed'; // 添加执行状态字段
 }
 
 const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => {
@@ -59,6 +60,30 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => 
         return '#f5222d';
       default:
         return '#8c8c8c';
+    }
+  };
+
+  const getExecutionStatusColor = (status?: string) => {
+    switch (status) {
+      case 'completed':
+        return '#52c41a'; // 绿色
+      case 'running':
+        return '#faad14';  // 黄色
+      case 'waiting':
+      default:
+        return '#d9d9d9';  // 灰色
+    }
+  };
+
+  const getExecutionStatusText = (status?: string) => {
+    switch (status) {
+      case 'completed':
+        return '已完成';
+      case 'running':
+        return '执行中';
+      case 'waiting':
+      default:
+        return '等待中';
     }
   };
 
@@ -116,6 +141,23 @@ const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => 
             }}
             onClick={toggleCollapsed}
           >
+            {/* 执行状态指示器 */}
+            <div
+              className="execution-status"
+              style={{
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: getExecutionStatusColor(data.executionStatus),
+                marginRight: '8px',
+                flexShrink: 0,
+                border: data.executionStatus === 'running' ? '2px solid #fff' : 'none',
+                boxShadow: data.executionStatus === 'running' ? `0 0 0 1px ${getExecutionStatusColor(data.executionStatus)}` : 'none',
+                animation: data.executionStatus === 'running' ? 'pulse 2s infinite' : 'none',
+              }}
+              title={getExecutionStatusText(data.executionStatus)}
+            />
+
             {/* 收起/展开三角 */}
             <div
               className="collapse-toggle"

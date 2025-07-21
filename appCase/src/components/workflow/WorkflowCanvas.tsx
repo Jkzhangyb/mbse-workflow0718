@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import {
   ReactFlow,
   useNodesState,
@@ -78,7 +78,8 @@ const initialNodes: Node[] = [
       description: '从系统规格书创建和管理需求项',
       tool: 'Polarion',
       subActions: ['创建需求'],
-      collapsed: false
+      collapsed: false,
+      executionStatus: 'completed'
     },
   },
   {
@@ -92,7 +93,8 @@ const initialNodes: Node[] = [
       description: '基于需求进行系统功能和架构设计',
       tool: 'Polarion-EA',
       subActions: ['需求同步'],
-      collapsed: false
+      collapsed: false,
+      executionStatus: 'completed'
     },
   },
   {
@@ -106,7 +108,8 @@ const initialNodes: Node[] = [
       description: '进行功能与架构的详细设计',
       tool: 'EA',
       subActions: ['功能&逻辑设计'],
-      collapsed: false
+      collapsed: false,
+      executionStatus: 'running'
     },
   },
   {
@@ -120,7 +123,8 @@ const initialNodes: Node[] = [
       description: '架构转换为可仿真的模型',
       tool: 'SSP',
       subActions: ['架构转换'],
-      collapsed: false
+      collapsed: false,
+      executionStatus: 'waiting'
     },
   },
   {
@@ -134,7 +138,8 @@ const initialNodes: Node[] = [
       description: '系统综合仿真验证',
       tool: 'SSP-Modelica',
       subActions: ['架构同步'],
-      collapsed: false
+      collapsed: false,
+      executionStatus: 'waiting'
     },
   },
   {
@@ -148,7 +153,8 @@ const initialNodes: Node[] = [
       description: '进行仿真配置定义',
       tool: 'M-works',
       subActions: ['仿真配置'],
-      collapsed: false
+      collapsed: false,
+      executionStatus: 'waiting'
     },
   },
   {
@@ -162,7 +168,8 @@ const initialNodes: Node[] = [
       description: '实验设计与多方案分析',
       tool: 'DOE',
       subActions: ['架构转换'],
-      collapsed: false
+      collapsed: false,
+      executionStatus: 'waiting'
     },
   },
 ];
@@ -216,6 +223,37 @@ interface WorkflowCanvasProps {
   appName?: string;
 }
 
+// 辅助函数：根据节点执行状态计算边的样式
+const getEdgeStyle = (nodes: Node[], sourceId: string, targetId: string) => {
+  const sourceNode = nodes.find(node => node.id === sourceId);
+  const targetNode = nodes.find(node => node.id === targetId);
+  
+  const sourceStatus = sourceNode?.data?.executionStatus;
+  const targetStatus = targetNode?.data?.executionStatus;
+  
+  // 如果两个节点都已完成，连线显示为绿色
+  if (sourceStatus === 'completed' && targetStatus === 'completed') {
+    return {
+      stroke: '#52c41a',
+      strokeWidth: 2,
+    };
+  }
+  
+  // 如果源节点已完成，目标节点正在运行，显示为黄色
+  if (sourceStatus === 'completed' && targetStatus === 'running') {
+    return {
+      stroke: '#faad14',
+      strokeWidth: 2,
+    };
+  }
+  
+  // 默认样式（灰色）
+  return {
+    stroke: '#d9d9d9',
+    strokeWidth: 1,
+  };
+};
+
 const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -231,6 +269,16 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
   const [simulationStatus, setSimulationStatus] = useState<'idle' | 'running' | 'paused'>('idle');
   
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  // 动态更新边的样式基于节点执行状态
+  useEffect(() => {
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) => ({
+        ...edge,
+        style: getEdgeStyle(nodes, edge.source, edge.target),
+      }))
+    );
+  }, [nodes, setEdges]);
 
   // 连接节点
   const onConnect = useCallback(
