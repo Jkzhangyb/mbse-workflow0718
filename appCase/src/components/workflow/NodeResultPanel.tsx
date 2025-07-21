@@ -176,6 +176,71 @@ const getMockRequirementsForEA = () => {
   ];
 };
 
+// 整车安全架构设计节点的数据
+const getMockArchitectureData = () => {
+  return {
+    modules: [
+      {
+        id: 'A-SYS-001',
+        name: 'AEB控制模块',
+        description: '检测障碍物并执行制动决策',
+        constraints: '响应时间 ≤ 0.1s',
+        relatedReqs: 'REQ-001, REQ-003'
+      },
+      {
+        id: 'A-SYS-002',
+        name: 'ESP稳定控制模块',
+        description: '监测车身状态，识别滑控并恢复稳定',
+        constraints: '制动修正 ≤ 0.15s',
+        relatedReqs: 'REQ-003'
+      },
+      {
+        id: 'A-SYS-003',
+        name: '安全气囊控制模块',
+        description: '碰撞检测和气囊展开控制',
+        constraints: '展开时间 ≤ 30ms',
+        relatedReqs: 'REQ-002'
+      },
+      {
+        id: 'A-SYS-004',
+        name: '制动系统控制模块',
+        description: '制动力分配和防抱死控制',
+        constraints: '制动距离 ≤ 38m@100km/h',
+        relatedReqs: 'REQ-006'
+      }
+    ],
+    constraints: [
+      {
+        id: 'CONST-001',
+        name: '制动响应时间',
+        value: '≤ 0.1s',
+        type: '性能约束',
+        critical: true
+      },
+      {
+        id: 'CONST-002',
+        name: '最大动作频率',
+        value: '10Hz',
+        type: '系统约束',
+        critical: false
+      },
+      {
+        id: 'CONST-003',
+        name: '工作温度范围',
+        value: '-35°C ~ +85°C',
+        type: '环境约束',
+        critical: true
+      }
+    ],
+    traceabilityMatrix: [
+      { requirement: 'REQ-001', modules: ['A-SYS-001'], coverage: '100%' },
+      { requirement: 'REQ-002', modules: ['A-SYS-003'], coverage: '100%' },
+      { requirement: 'REQ-003', modules: ['A-SYS-001', 'A-SYS-002'], coverage: '100%' },
+      { requirement: 'REQ-006', modules: ['A-SYS-004'], coverage: '100%' }
+    ]
+  };
+};
+
 const NodeResultPanel: React.FC<NodeResultPanelProps> = ({ visible, onClose, nodeData }) => {
   if (!visible || !nodeData) return null;
 
@@ -241,8 +306,147 @@ const NodeResultPanel: React.FC<NodeResultPanelProps> = ({ visible, onClose, nod
     );
   };
 
+  // 渲染架构模块清单表
+  const renderArchitectureModulesTable = (modules: Array<{ id: string; name: string; description: string; constraints: string; relatedReqs: string }>) => {
+    return (
+      <div className="architecture-section">
+        <h4 className="section-title">架构模块清单表</h4>
+        <table className="requirements-table">
+          <thead>
+            <tr>
+              <th>模块ID</th>
+              <th>名称</th>
+              <th>功能描述</th>
+              <th>设计约束</th>
+              <th>关联需求</th>
+            </tr>
+          </thead>
+          <tbody>
+            {modules.map((module) => (
+              <tr key={module.id}>
+                <td>{module.id}</td>
+                <td>{module.name}</td>
+                <td>{module.description}</td>
+                <td>{module.constraints}</td>
+                <td>{module.relatedReqs}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  // 渲染约束和性能指标
+  const renderConstraintsDetail = (constraints: Array<{ id: string; name: string; value: string; type: string; critical: boolean }>) => {
+    return (
+      <div className="architecture-section">
+        <h4 className="section-title">约束 & 性能指标</h4>
+        <div className="constraints-grid">
+          {constraints.map((constraint) => (
+            <div key={constraint.id} className={`constraint-item ${constraint.critical ? 'critical' : ''}`}>
+              <div className="constraint-header">
+                <span className="constraint-name">{constraint.name}</span>
+                <span className={`constraint-type ${constraint.critical ? 'critical' : 'normal'}`}>
+                  {constraint.critical ? '关键' : '一般'}
+                </span>
+              </div>
+              <div className="constraint-value">{constraint.value}</div>
+              <div className="constraint-category">{constraint.type}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // 渲染需求-模块追溯矩阵
+  const renderTraceabilityMatrix = (matrix: Array<{ requirement: string; modules: string[]; coverage: string }>) => {
+    return (
+      <div className="architecture-section">
+        <h4 className="section-title">需求-模块追溯矩阵</h4>
+        <table className="requirements-table">
+          <thead>
+            <tr>
+              <th>需求ID</th>
+              <th>分配模块</th>
+              <th>覆盖率</th>
+            </tr>
+          </thead>
+          <tbody>
+            {matrix.map((item, index) => (
+              <tr key={index}>
+                <td>{item.requirement}</td>
+                <td>{item.modules.join(', ')}</td>
+                <td>
+                  <span className="coverage-badge" style={{ backgroundColor: item.coverage === '100%' ? '#52c41a' : '#faad14' }}>
+                    {item.coverage}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  // 渲染SysML架构图占位符
+  const renderSysMLDiagram = () => {
+    return (
+      <div className="architecture-section">
+        <h4 className="section-title">SysML架构图 (BDD/IBD)</h4>
+        <div className="diagram-placeholder">
+          <div className="diagram-info">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="#1890ff">
+              <path d="M24 4L44 14v20L24 44L4 34V14L24 4zm0 4L8 16v16l16 10 16-10V16L24 8z"/>
+              <circle cx="24" cy="20" r="3" fill="#1890ff"/>
+              <circle cx="16" cy="28" r="2" fill="#1890ff"/>
+              <circle cx="32" cy="28" r="2" fill="#1890ff"/>
+              <line x1="21" y1="22" x2="18" y2="26" stroke="#1890ff" strokeWidth="2"/>
+              <line x1="27" y1="22" x2="30" y2="26" stroke="#1890ff" strokeWidth="2"/>
+            </svg>
+            <p>架构图展示</p>
+            <span>点击查看详细的SysML BDD/IBD图</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // 整车安全架构设计节点的显示逻辑
+  if (nodeData?.customName === '整车安全架构设计') {
+    const architectureData = getMockArchitectureData();
+    return (
+      <div className={`node-result-panel ${visible ? 'visible' : ''}`}>
+        <div className="result-overlay" onClick={onClose} />
+        <div className="result-content">
+          <div className="result-header">
+            <div className="result-title">
+              <h3>{nodeData.customName || nodeData.label} - 执行结果</h3>
+              <span className="result-subtitle">
+                工具: {nodeData.tool || '未指定'} | 类型: {nodeData.type}
+              </span>
+            </div>
+            <button className="result-close-btn" onClick={onClose}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/>
+              </svg>
+            </button>
+          </div>
+          <div className="result-list architecture-result">
+            {renderArchitectureModulesTable(architectureData.modules)}
+            {renderSysMLDiagram()}
+            {renderConstraintsDetail(architectureData.constraints)}
+            {renderTraceabilityMatrix(architectureData.traceabilityMatrix)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // 在 NodeResultPanel 中调用表格显示逻辑，仅针对安全需求同步到EA节点
-  if (nodeData?.label === '功能与架构设计') {
+  if (nodeData?.label === '功能与架构设计' && nodeData?.customName === '安全需求同步到EA') {
     const requirements = getMockRequirementsForEA();
     return (
       <div className={`node-result-panel ${visible ? 'visible' : ''}`}>
