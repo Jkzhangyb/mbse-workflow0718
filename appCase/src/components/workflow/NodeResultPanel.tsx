@@ -96,6 +96,14 @@ const getMockRequirements = (tool?: string) => {
         priority: 'Low',
         status: 'Under Review',
         category: '用户体验'
+      },
+      {
+        id: 'REQ-011',
+        title: '数据安全要求',
+        description: '系统应确保数据传输的加密性，防止未经授权的访问',
+        priority: 'High',
+        status: 'Approved',
+        category: '安全'
       }
     ];
   }
@@ -110,6 +118,61 @@ const getMockRequirements = (tool?: string) => {
       status: 'Completed',
       category: '执行结果'
     }
+  ];
+};
+
+// 确保数据源中包含所有已批准的需求，并正确传递到安全需求同步到EA节点
+const getMockRequirementsForEA = () => {
+  return [
+    {
+      id: 'REQ-001',
+      title: '整车主动安全系统性能要求',
+      description: '车辆应配备AEB自动紧急制动系统，在车速20-80km/h范围内，对静态和动态障碍物的制动响应时间不超过0.8秒',
+      priority: 'High',
+      status: 'Approved',
+    },
+    {
+      id: 'REQ-002',
+      title: '被动安全约束系统要求',
+      description: '安全气囊系统应在碰撞发生后30ms内完成充气，并满足Euro NCAP五星安全标准',
+      priority: 'High',
+      status: 'Approved',
+    },
+    {
+      id: 'REQ-004',
+      title: '动力系统燃油经济性要求',
+      description: '综合工况油耗应不超过6.5L/100km，满足国六排放标准',
+      priority: 'Medium',
+      status: 'Approved',
+    },
+    {
+      id: 'REQ-005',
+      title: '车身结构强度要求',
+      description: '车身结构应通过40%偏置碰撞测试，A柱变形量不超过150mm',
+      priority: 'High',
+      status: 'Approved',
+    },
+    {
+      id: 'REQ-006',
+      title: '制动系统性能要求',
+      description: '100km/h-0制动距离不超过38米，制动踏板行程不超过踏板总行程的60%',
+      priority: 'High',
+      status: 'Approved',
+    },
+    {
+      id: 'REQ-009',
+      title: '环境适应性要求',
+      description: '车辆应能在-35°C至+85°C环境温度范围内正常工作，防护等级达到IP67',
+      priority: 'Medium',
+      status: 'Approved',
+    },
+    {
+      id: 'REQ-011',
+      title: '数据安全要求',
+      description: '系统应确保数据传输的加密性，防止未经授权的访问',
+      priority: 'High',
+      status: 'Approved',
+    },
   ];
 };
 
@@ -145,6 +208,66 @@ const NodeResultPanel: React.FC<NodeResultPanelProps> = ({ visible, onClose, nod
         return '#1890ff';
     }
   };
+
+  // 修改安全需求同步到EA节点的显示逻辑，确保结果如图所示
+  const renderEAApprovedRequirementsTable = (requirements: Array<{ id: string; title: string; description: string; priority: string; status: string }>) => {
+    const approvedRequirements = requirements.filter(req => req.status === 'Approved');
+
+    return (
+      <table className="requirements-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Priority</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {approvedRequirements.map((req, index: number) => (
+            <tr key={req.id}>
+              <td>{index + 1}</td>
+              <td>{req.id}</td>
+              <td>{req.title}</td>
+              <td>{req.description}</td>
+              <td style={{ backgroundColor: getPriorityColor(req.priority) }}>{req.priority}</td>
+              <td style={{ backgroundColor: getStatusColor(req.status) }}>{req.status}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  };
+
+  // 在 NodeResultPanel 中调用表格显示逻辑，仅针对安全需求同步到EA节点
+  if (nodeData?.label === '功能与架构设计') {
+    const requirements = getMockRequirementsForEA();
+    return (
+      <div className={`node-result-panel ${visible ? 'visible' : ''}`}>
+        <div className="result-overlay" onClick={onClose} />
+        <div className="result-content">
+          <div className="result-header">
+            <div className="result-title">
+              <h3>{nodeData.customName || nodeData.label} - 执行结果</h3>
+              <span className="result-subtitle">
+                工具: {nodeData.tool || '未指定'} | 类型: {nodeData.type}
+              </span>
+            </div>
+            <button className="result-close-btn" onClick={onClose}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.88c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"/>
+              </svg>
+            </button>
+          </div>
+          <div className="result-list">
+            {renderEAApprovedRequirementsTable(requirements)}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`node-result-panel ${visible ? 'visible' : ''}`}>
