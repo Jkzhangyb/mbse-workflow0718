@@ -41,6 +41,7 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
     priority: node.data.priority || 'high',
     creator: node.data.creator || '系统管理员',
     createTime: node.data.createTime || getCurrentDateTime(),
+    autoExecution: node.data.autoExecution || false, // 新增自动执行开关
     executionLog: node.data.executionLog || '',
     // 需求同步相关
     syncEnabled: node.data.syncEnabled || false,
@@ -66,6 +67,7 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
       priority: node.data.priority || 'high',
       creator: node.data.creator || '系统管理员',
       createTime: node.data.createTime || getCurrentDateTime(),
+      autoExecution: node.data.autoExecution || false, // 新增自动执行开关
       executionLog: node.data.executionLog || '',
       syncEnabled: node.data.syncEnabled || false,
       syncSource: node.data.syncSource || '',
@@ -107,7 +109,8 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
     const updatedNode = {
       ...node,
       data: {
-        ...formData // 确保保存所有字段，包括 customName
+        ...node.data, // 保留原有的节点数据
+        ...formData   // 只更新表单中的字段
       }
     };
     onUpdate(updatedNode); // 通知画布更新节点数据
@@ -124,6 +127,7 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
       priority: node.data.priority || 'high',
       creator: node.data.creator || '系统管理员',
       createTime: node.data.createTime || getCurrentDateTime(),
+      autoExecution: node.data.autoExecution || false, // 新增自动执行开关
       executionLog: node.data.executionLog || '',
       syncEnabled: node.data.syncEnabled || false,
       syncSource: node.data.syncSource || '',
@@ -250,6 +254,19 @@ const NodeConfigPanel: React.FC<NodeConfigPanelProps> = ({ node, onClose, onUpda
                 readOnly
                 className="readonly-input"
               />
+            </div>
+
+            {/* 自动执行开关 */}
+            <div className="form-group">
+              <label className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={formData.autoExecution}
+                  onChange={(e) => handleInputChange('autoExecution', e.target.checked)}
+                />
+                <span className="checkmark"></span>
+                自动执行
+              </label>
             </div>
 
             {/* 执行日志 */}
