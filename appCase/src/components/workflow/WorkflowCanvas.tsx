@@ -80,7 +80,8 @@ const initialNodes: Node[] = [
       tool: 'Polarion',
       subActions: ['创建需求'],
       collapsed: false,
-      executionStatus: 'completed'
+      executionStatus: 'completed',
+      autoExecution: true
     },
   },
   {
@@ -95,7 +96,8 @@ const initialNodes: Node[] = [
       tool: 'Polarion-EA',
       subActions: ['需求同步'],
       collapsed: false,
-      executionStatus: 'completed'
+      executionStatus: 'completed',
+      autoExecution: true
     },
   },
   {
@@ -110,7 +112,8 @@ const initialNodes: Node[] = [
       tool: 'EA',
       subActions: ['功能&逻辑设计'],
       collapsed: false,
-      executionStatus: 'running'
+      executionStatus: 'running',
+      autoExecution: true
     },
   },
   {
@@ -125,7 +128,8 @@ const initialNodes: Node[] = [
       tool: 'SSP',
       subActions: ['架构转换'],
       collapsed: false,
-      executionStatus: 'waiting'
+      executionStatus: 'waiting',
+      autoExecution: true
     },
   },
   {
@@ -140,7 +144,8 @@ const initialNodes: Node[] = [
       tool: 'SSP-Modelica',
       subActions: ['架构同步'],
       collapsed: false,
-      executionStatus: 'waiting'
+      executionStatus: 'waiting',
+      autoExecution: false  // 这个节点默认不自动执行，测试错误处理
     },
   },
   {
@@ -155,7 +160,8 @@ const initialNodes: Node[] = [
       tool: 'M-works',
       subActions: ['仿真配置'],
       collapsed: false,
-      executionStatus: 'waiting'
+      executionStatus: 'waiting',
+      autoExecution: true
     },
   },
   {
@@ -170,7 +176,8 @@ const initialNodes: Node[] = [
       tool: 'DOE',
       subActions: ['架构转换'],
       collapsed: false,
-      executionStatus: 'waiting'
+      executionStatus: 'waiting',
+      autoExecution: true
     },
   },
 ];
@@ -267,7 +274,24 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
   }>({ visible: false, x: 0, y: 0 });
 
   // 仿真状态管理
-  const [simulationStatus, setSimulationStatus] = useState<'idle' | 'running' | 'paused'>('idle');
+  const [simulationStatus, setSimulationStatus] = useState<'idle' | 'running' | 'paused' | 'completed' | 'error'>('idle');
+  const [currentExecutingNodeIndex, setCurrentExecutingNodeIndex] = useState<number>(-1);
+  const [executionError, setExecutionError] = useState<string | null>(null);
+  
+  // 使用ref来跟踪执行状态，避免闭包问题
+  const executionStateRef = useRef<{
+    status: 'idle' | 'running' | 'paused' | 'completed' | 'error';
+    isPaused: boolean;
+  }>({
+    status: 'idle',
+    isPaused: false
+  });
+
+  // 同步ref状态
+  useEffect(() => {
+    executionStateRef.current.status = simulationStatus;
+    executionStateRef.current.isPaused = simulationStatus === 'paused';
+  }, [simulationStatus]);
   
   // 结果面板状态管理
   const [resultPanel, setResultPanel] = useState<{
@@ -311,6 +335,133 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
   const handleCloseResultPanel = useCallback(() => {
     setResultPanel({ visible: false, nodeData: null });
   }, []);
+
+  // 开始自动执行工作流
+  const startWorkflowExecution = useCallback(async () => {
+    console.log('开始执行工作流');
+    setSimulationStatus('running');
+    setExecutionError(null);
+    setCurrentExecutingNodeIndex(0);
+
+    // 检查所有节点的自动执行选项
+    const nonAutoNodes = nodes.filter(node => !node.data.autoExecution);
+    if (nonAutoNodes.length > 0) {
+      const nodeNames = nonAutoNodes.map(node => node.data.customName || node.data.label).join(', ');
+      setExecutionError(`以下节点未开启自动执行: ${nodeNames}`);
+      setSimulationStatus('error');
+      return;
+    }
+
+    // 重置所有节点状态为等待
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          executionStatus: 'waiting'
+        }
+      }))
+    );
+
+    // 开始按顺序执行节点
+    executeNodeSequence(0);
+  }, [nodes, setNodes]);
+
+  // 暂停执行
+  const pauseWorkflowExecution = useCallback(() => {
+    console.log('暂停执行工作流');
+    setSimulationStatus('paused');
+  }, []);
+
+  // 继续执行
+  const resumeWorkflowExecution = useCallback(() => {
+    console.log('继续执行工作流');
+    setSimulationStatus('running');
+    // 从当前节点继续执行
+    if (currentExecutingNodeIndex >= 0) {
+      executeNodeSequence(currentExecutingNodeIndex);
+    }
+  }, [currentExecutingNodeIndex]);
+
+  // 按顺序执行节点
+  const executeNodeSequence = useCallback(async (nodeIndex: number) => {
+    const currentNodes = nodes; // 获取当前的节点列表
+    
+    if (nodeIndex >= currentNodes.length) {
+      // 所有节点执行完成
+      setSimulationStatus('completed');
+      setCurrentExecutingNodeIndex(-1);
+      console.log('所有节点执行完成');
+      return;
+    }
+
+    // 检查是否被暂停
+    if (executionStateRef.current.isPaused) {
+      return;
+    }
+
+    const currentNode = currentNodes[nodeIndex];
+    setCurrentExecutingNodeIndex(nodeIndex);
+
+    // 设置当前节点为执行中
+    setNodes((prevNodes) =>
+      prevNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          executionStatus: node.id === currentNode.id ? 'running' : node.data.executionStatus
+        }
+      }))
+    );
+
+    // 模拟节点执行时间（2-4秒随机）
+    const executionTime = 2000 + Math.random() * 2000;
+    
+    setTimeout(() => {
+      // 检查是否已被暂停
+      if (executionStateRef.current.isPaused) {
+        return; // 如果被暂停，不继续执行
+      }
+
+      // 设置当前节点为完成
+      setNodes((prevNodes) =>
+        prevNodes.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            executionStatus: node.id === currentNode.id ? 'completed' : node.data.executionStatus
+          }
+        }))
+      );
+
+      // 继续执行下一个节点
+      setTimeout(() => {
+        // 再次检查是否被暂停
+        if (executionStateRef.current.isPaused) {
+          return;
+        }
+        executeNodeSequence(nodeIndex + 1);
+      }, 500); // 短暂延迟后执行下一个节点
+    }, executionTime);
+  }, [nodes, setNodes]);
+
+  // 停止执行
+  const stopWorkflowExecution = useCallback(() => {
+    setSimulationStatus('idle');
+    setCurrentExecutingNodeIndex(-1);
+    setExecutionError(null);
+    
+    // 重置所有节点状态
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          executionStatus: 'waiting'
+        }
+      }))
+    );
+  }, [setNodes]);
 
   // 为节点添加查看结果回调
   useEffect(() => {
@@ -442,8 +593,20 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
           <div className="simulation-controls">
             <button 
               className={`control-btn ${simulationStatus === 'running' ? 'active' : ''}`}
-              onClick={() => setSimulationStatus(simulationStatus === 'running' ? 'paused' : 'running')}
-              title={simulationStatus === 'running' ? '暂停仿真' : '开始仿真'}
+              onClick={
+                simulationStatus === 'running' 
+                  ? pauseWorkflowExecution 
+                  : simulationStatus === 'paused' 
+                    ? resumeWorkflowExecution 
+                    : startWorkflowExecution
+              }
+              title={
+                simulationStatus === 'running' 
+                  ? '暂停仿真' 
+                  : simulationStatus === 'paused' 
+                    ? '继续仿真' 
+                    : '开始仿真'
+              }
             >
               {simulationStatus === 'running' ? (
                 <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
@@ -455,12 +618,12 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
                   <path d="M3 2v12l10-6L3 2z" />
                 </svg>
               )}
-              {simulationStatus === 'running' ? '暂停' : '开始'}
+              {simulationStatus === 'running' ? '暂停' : simulationStatus === 'paused' ? '继续' : '开始'}
             </button>
             
             <button 
               className="control-btn"
-              onClick={() => setSimulationStatus('idle')}
+              onClick={stopWorkflowExecution}
               disabled={simulationStatus === 'idle'}
               title="停止仿真"
             >
@@ -470,6 +633,23 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
               停止
             </button>
           </div>
+          
+          {/* 执行状态信息 */}
+          {executionError && (
+            <div className="simulation-controls" style={{ top: '70px' }}>
+              <div className="execution-error">
+                <span>{executionError}</span>
+              </div>
+            </div>
+          )}
+          
+          {(simulationStatus === 'running' || simulationStatus === 'paused') && currentExecutingNodeIndex >= 0 && (
+            <div className="simulation-controls" style={{ top: executionError ? '120px' : '70px' }}>
+              <div className="execution-progress">
+                执行进度: {currentExecutingNodeIndex + 1} / {nodes.length}
+              </div>
+            </div>
+          )}
 
           <ReactFlow
             nodes={nodes}

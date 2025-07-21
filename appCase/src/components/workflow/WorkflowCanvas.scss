@@ -44,7 +44,7 @@
   }
 }
 
-/* 仿真控制按钮 */
+/* 工作流自动执行控制按钮 */
 .simulation-controls {
   position: absolute;
   top: 20px;
@@ -97,6 +97,29 @@
       height: 14px;
       flex-shrink: 0;
     }
+  }
+
+  .execution-error {
+    background: #fff2f0;
+    border: 1px solid #ffccc7;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #ff4d4f;
+    font-size: 12px;
+    max-width: 300px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(255, 77, 79, 0.1);
+  }
+
+  .execution-progress {
+    background: #f0f9ff;
+    border: 1px solid #bae7ff;
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: #1890ff;
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(24, 144, 255, 0.1);
   }
 }
 
