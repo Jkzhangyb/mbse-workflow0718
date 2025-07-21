@@ -277,6 +277,7 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
   const [simulationStatus, setSimulationStatus] = useState<'idle' | 'running' | 'paused' | 'completed' | 'error'>('idle');
   const [currentExecutingNodeIndex, setCurrentExecutingNodeIndex] = useState<number>(-1);
   const [executionError, setExecutionError] = useState<string | null>(null);
+  const [showWorkflowDetails, setShowWorkflowDetails] = useState<boolean>(false);
   
   // 使用ref来跟踪执行状态，避免闭包问题
   const executionStateRef = useRef<{
@@ -632,6 +633,21 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
               </svg>
               停止
             </button>
+            
+            {/* 工作流详情按钮 - 只有在执行完成后才显示 */}
+            {simulationStatus === 'completed' && (
+              <button 
+                className="control-btn"
+                onClick={() => setShowWorkflowDetails(true)}
+                title="查看工作流详情"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                  <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+                工作流详情
+              </button>
+            )}
           </div>
           
           {/* 执行状态信息 */}
@@ -751,6 +767,66 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
           nodeData={resultPanel.nodeData}
           onClose={handleCloseResultPanel}
         />
+
+        {/* 工作流详情弹窗 */}
+        {showWorkflowDetails && (
+          <div className="workflow-details-modal">
+            <div className="workflow-details-overlay" onClick={() => setShowWorkflowDetails(false)}></div>
+            <div className="workflow-details-content">
+              <div className="workflow-details-header">
+                <h3>工作流执行详情</h3>
+                <button 
+                  className="close-btn"
+                  onClick={() => setShowWorkflowDetails(false)}
+                  title="关闭"
+                >
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                  </svg>
+                </button>
+              </div>
+              <div className="workflow-details-body">
+                <div className="execution-summary">
+                  <h4>执行摘要</h4>
+                  <div className="summary-item">
+                    <span className="label">执行状态:</span>
+                    <span className="value success">已完成</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="label">总节点数:</span>
+                    <span className="value">{nodes.length}</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="label">成功节点:</span>
+                    <span className="value">{nodes.filter(node => node.data.executionStatus === 'completed').length}</span>
+                  </div>
+                </div>
+                
+                <div className="nodes-execution-details">
+                  <h4>节点执行详情</h4>
+                  <div className="nodes-list">
+                    {nodes.map((node, index) => (
+                      <div key={node.id} className="node-detail-item">
+                        <div className="node-info">
+                          <span className="node-index">{index + 1}</span>
+                          <span className="node-name">{node.data.customName || node.data.label}</span>
+                          <span className={`node-status ${node.data.executionStatus || 'idle'}`}>
+                            {node.data.executionStatus === 'completed' ? '✓ 已完成' : 
+                             node.data.executionStatus === 'running' ? '⟳ 执行中' : 
+                             node.data.executionStatus === 'error' ? '✗ 失败' : '⋅ 未执行'}
+                          </span>
+                        </div>
+                        <div className="node-description">
+                          {node.data.description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ReactFlowProvider>
   );
