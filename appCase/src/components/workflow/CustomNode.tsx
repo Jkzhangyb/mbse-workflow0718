@@ -12,6 +12,7 @@ interface CustomNodeData {
   collapsed?: boolean;
   customName?: string; // 添加 customName 字段
   executionStatus?: 'waiting' | 'running' | 'completed'; // 添加执行状态字段
+  onViewResult?: (nodeId: string, nodeData: CustomNodeData) => void; // 添加查看结果回调
 }
 
 const CustomNode: React.FC<NodeProps<CustomNodeData>> = ({ data, selected }) => {

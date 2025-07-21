@@ -4,6 +4,7 @@ interface ContextMenuProps {
   visible: boolean;
   x: number;
   y: number;
+  nodeExecutionStatus?: 'waiting' | 'running' | 'completed'; // 添加节点执行状态
   onClose: () => void;
   onDelete: () => void;
   onDuplicate: () => void;
@@ -17,6 +18,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
   visible,
   x,
   y,
+  nodeExecutionStatus,
   onClose,
   onDelete,
   onDuplicate,
@@ -185,19 +187,24 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       <div
         className="context-menu-item"
         onClick={() => {
-          onViewResult();
-          onClose();
+          if (nodeExecutionStatus === 'completed') {
+            onViewResult();
+            onClose();
+          }
         }}
         style={{
           padding: '8px 16px',
-          cursor: 'pointer',
+          cursor: nodeExecutionStatus === 'completed' ? 'pointer' : 'not-allowed',
           fontSize: '14px',
-          color: '#0891b2',
+          color: nodeExecutionStatus === 'completed' ? '#0891b2' : '#d9d9d9',
           display: 'flex',
           alignItems: 'center',
+          opacity: nodeExecutionStatus === 'completed' ? 1 : 0.5,
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#cffafe';
+          if (nodeExecutionStatus === 'completed') {
+            e.currentTarget.style.backgroundColor = '#cffafe';
+          }
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = 'transparent';
@@ -205,6 +212,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       >
         <span style={{ marginRight: '8px' }}>📊</span>
         查看结果
+        {nodeExecutionStatus !== 'completed' && (
+          <span style={{ marginLeft: 'auto', fontSize: '12px', color: '#8c8c8c' }}>
+            (需完成执行)
+          </span>
+        )}
       </div>
     </div>
   );

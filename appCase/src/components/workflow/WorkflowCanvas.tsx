@@ -17,6 +17,7 @@ import '@reactflow/core/dist/style.css';
 import CustomNode from './CustomNode';
 // import NodeLibrary from './NodeLibrary';
 import NodeConfigPanel from './NodeConfigPanel';
+import NodeResultPanel from './NodeResultPanel';
 import ContextMenu from './ContextMenu';
 import './WorkflowCanvas.scss';
 
@@ -268,6 +269,18 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
   // 仿真状态管理
   const [simulationStatus, setSimulationStatus] = useState<'idle' | 'running' | 'paused'>('idle');
   
+  // 结果面板状态管理
+  const [resultPanel, setResultPanel] = useState<{
+    visible: boolean;
+    nodeData: {
+      id: string;
+      label: string;
+      tool?: string;
+      type: string;
+      customName?: string;
+    } | null;
+  }>({ visible: false, nodeData: null });
+  
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // 动态更新边的样式基于节点执行状态
@@ -279,6 +292,38 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
       }))
     );
   }, [nodes, setEdges]);
+
+  // 处理查看结果
+  const handleViewResult = useCallback((nodeId: string, nodeData: any) => {
+    setResultPanel({
+      visible: true,
+      nodeData: {
+        id: nodeId,
+        label: nodeData.label,
+        tool: nodeData.tool,
+        type: nodeData.type,
+        customName: nodeData.customName
+      }
+    });
+  }, []);
+
+  // 关闭结果面板
+  const handleCloseResultPanel = useCallback(() => {
+    setResultPanel({ visible: false, nodeData: null });
+  }, []);
+
+  // 为节点添加查看结果回调
+  useEffect(() => {
+    setNodes((currentNodes) =>
+      currentNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onViewResult: handleViewResult
+        }
+      }))
+    );
+  }, [handleViewResult, setNodes]);
 
   // 连接节点
   const onConnect = useCallback(
@@ -490,9 +535,41 @@ const WorkflowCanvas: React.FC<WorkflowCanvasProps> = () => {
           visible={contextMenu.visible}
           x={contextMenu.x}
           y={contextMenu.y}
+          nodeExecutionStatus={contextMenu.nodeId 
+            ? nodes.find(node => node.id === contextMenu.nodeId)?.data?.executionStatus 
+            : undefined
+          }
           onClose={closeContextMenu}
           onDelete={() => contextMenu.nodeId && deleteNode(contextMenu.nodeId)}
           onDuplicate={() => contextMenu.nodeId && duplicateNode(contextMenu.nodeId)}
+          onOpenTool={() => {
+            console.log('打开工具');
+            closeContextMenu();
+          }}
+          onExecuteNode={() => {
+            console.log('执行节点');
+            closeContextMenu();
+          }}
+          onExecuteFromNode={() => {
+            console.log('从此节点开始执行');
+            closeContextMenu();
+          }}
+          onViewResult={() => {
+            if (contextMenu.nodeId) {
+              const node = nodes.find(n => n.id === contextMenu.nodeId);
+              if (node) {
+                handleViewResult(contextMenu.nodeId, node.data);
+              }
+            }
+            closeContextMenu();
+          }}
+        />
+
+        {/* 节点结果面板 */}
+        <NodeResultPanel
+          visible={resultPanel.visible}
+          nodeData={resultPanel.nodeData}
+          onClose={handleCloseResultPanel}
         />
       </div>
     </ReactFlowProvider>
