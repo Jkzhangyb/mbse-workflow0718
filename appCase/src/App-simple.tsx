@@ -186,11 +186,7 @@ const initialRows = [
 const WorkflowForm: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   <div className="workflow-form-page">
     {/* 面包屑导航 */}
-    <div className="breadcrumb" style={{marginBottom: 20, fontSize: 15, color: '#888', display: 'flex', alignItems: 'center'}}>
-      <span style={{cursor: 'pointer', color: '#1890ff', fontWeight: 500}} onClick={onBack}>首页</span>
-      <span style={{margin: '0 8px'}}>/</span>
-      <span style={{color: '#222', fontWeight: 500}}>工作流管理</span>
-    </div>
+    
     {/* 顶部统计卡片区 */}
     <div className="workflow-stats" style={{display: 'flex', gap: 24, marginBottom: 24}}>
       <div style={{flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
@@ -230,16 +226,114 @@ const WorkflowForm: React.FC<{ onBack: () => void }> = ({ onBack }) => (
 );
 
 const WorkflowTable: React.FC = () => {
-  // 排序、筛选、搜索等可扩展
+  // 交互状态
+  const [searchText, setSearchText] = React.useState('');
+  const [filterStatus, setFilterStatus] = React.useState('全部状态');
+  const [filterType, setFilterType] = React.useState('全部类型');
+  const [filterPriority, setFilterPriority] = React.useState('全部优先级');
+  const [filteredList, setFilteredList] = React.useState(staticWorkflowList);
+
+  // 筛选逻辑
+  const handleFilter = () => {
+    let result = staticWorkflowList.filter(row => {
+      const matchName = searchText === '' || row.name.includes(searchText);
+      const matchStatus = filterStatus === '全部状态' || row.status === filterStatus;
+      const matchType = filterType === '全部类型' || row.type === filterType;
+      const matchPriority = filterPriority === '全部优先级' || row.priority === filterPriority;
+      return matchName && matchStatus && matchType && matchPriority;
+    });
+    setFilteredList(result);
+  };
+
+  React.useEffect(() => {
+    handleFilter();
+    // eslint-disable-next-line
+  }, [searchText, filterStatus, filterType, filterPriority]);
+
+  // 操作按钮样式
+  const actionBtnStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    height: 32,
+    borderRadius: 8,
+    fontSize: 15,
+    fontWeight: 500,
+    cursor: 'pointer',
+    padding: '0 16px',
+    boxShadow: '0 1px 4px #e5e7eb',
+  };
+  const actionBtnTypes = {
+    run: {
+      background: '#1890ff',
+      color: '#fff',
+      border: 'none',
+    },
+    view: {
+      background: '#fff',
+      color: '#1890ff',
+      border: '1px solid #1890ff',
+      padding: '0 12px',
+    },
+    edit: {
+      background: '#fff',
+      color: '#faad14',
+      border: '1px solid #faad14',
+      padding: '0 12px',
+    },
+  };
+
+  // 优先级标签样式修正 textAlign 类型
+  const priorityTagStyle = {
+    borderRadius: 6,
+    padding: '4px 12px',
+    fontSize: 15,
+    fontWeight: 500,
+    color: '#fff',
+    display: 'inline-block',
+    minWidth: 32,
+    textAlign: 'center' as const,
+  };
+  const priorityColorMap = {
+    高: '#f5222d',
+    中: '#faad14',
+    低: '#bfbfbf',
+  };
+
+  // 操作按钮渲染，严格按图片风格
+  const renderActions = () => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8, padding: '4px 8px' }}>
+      <button style={{ background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, height: 32, padding: '0 16px', fontSize: 15, fontWeight: 500, boxShadow: '0 1px 4px #e5e7eb', cursor: 'pointer' }}>运行</button>
+      <button style={{ background: '#fff', color: '#1890ff', border: '1px solid #1890ff', borderRadius: 8, height: 32, padding: '0 12px', fontSize: 15, fontWeight: 500, boxShadow: '0 1px 4px #e5e7eb', cursor: 'pointer' }}>查看</button>
+      <button style={{ background: '#fff', color: '#faad14', border: '1px solid #faad14', borderRadius: 8, height: 32, padding: '0 12px', fontSize: 15, fontWeight: 500, boxShadow: '0 1px 4px #e5e7eb', cursor: 'pointer' }}>编辑</button>
+    </div>
+  );
+
   return (
     <div className="workflow-list-section" style={{marginTop: 0}}>
       {/* 搜索和筛选区 */}
       <div className="workflow-list-header" style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16}}>
-        <input type="text" placeholder="搜索工作流名称或编号..." style={{flex: '0 0 240px', padding: '8px 16px', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 15, background: '#fafafa'}} />
-        <select style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}><option>全部状态</option><option>未启动</option><option>运行中</option><option>已完成</option><option>失败</option></select>
-        <select style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}><option>全部类型</option><option>热管理仿真</option><option>整车性能验证</option><option>安全仿真</option></select>
-        <select style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}><option>全部优先级</option><option>高</option><option>中</option><option>低</option></select>
-        <button style={{background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, boxShadow: '0 1px 4px #e5e7eb', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>🔍</span>筛选</button>
+        <input type="text" placeholder="搜索工作流名称或编号..." value={searchText} onChange={e => setSearchText(e.target.value)} style={{flex: '0 0 240px', padding: '8px 16px', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 15, background: '#fafafa'}} />
+        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}>
+          <option>全部状态</option>
+          <option>未启动</option>
+          <option>运行中</option>
+          <option>已完成</option>
+          <option>失败</option>
+        </select>
+        <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}>
+          <option>全部类型</option>
+          <option>热管理仿真</option>
+          <option>整车性能验证</option>
+          <option>安全仿真</option>
+        </select>
+        <select value={filterPriority} onChange={e => setFilterPriority(e.target.value)} style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}>
+          <option>全部优先级</option>
+          <option>高</option>
+          <option>中</option>
+          <option>低</option>
+        </select>
+        <button onClick={handleFilter} style={{background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, boxShadow: '0 1px 4px #e5e7eb', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>🔍</span>筛选</button>
         <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, color: '#222', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>📦</span>列表视图</button>
         <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, color: '#222', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>🗂️</span>卡片视图</button>
       </div>
@@ -255,44 +349,29 @@ const WorkflowTable: React.FC = () => {
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>最后运行时间</th>
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>运行次数</th>
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>优先级</th>
-            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>操作</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb', textAlign: 'right'}}>操作</th>
           </tr>
         </thead>
         <tbody>
-          {staticWorkflowList.map((row, idx) => (
+          {filteredList.map((row, idx) => (
             <tr key={idx} style={{cursor: 'pointer', background: idx % 2 === 0 ? '#f7faff' : '#fff', transition: 'background 0.2s', height: 56}}>
-              <td style={{padding: '12px 12px', fontWeight: 500, color: '#222'}}>{row.name}</td>
-              <td style={{padding: '12px 12px'}}><span className="workflow-type-tag" style={{background: '#e6f7ff', color: '#1890ff', borderRadius: 6, padding: '4px 12px', fontSize: 15, fontWeight: 500}}>{row.type}</span></td>
-              <td style={{padding: '12px 12px'}}>
+              <td style={{padding: '12px', fontWeight: 500, color: '#222'}}>{row.name}</td>
+              <td style={{padding: '12px'}}><span className="workflow-type-tag" style={{background: '#e6f7ff', color: '#1890ff', borderRadius: 6, padding: '4px 12px', fontSize: 15, fontWeight: 500}}>{row.type}</span></td>
+              <td style={{padding: '12px'}}>
                 <span style={{color: statusColor[row.status], fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, fontSize: 15}}>
                   <span>{statusIcon[row.status]}</span>
                   <span>{row.status}</span>
                 </span>
               </td>
-              <td style={{padding: '12px 12px'}}>{row.creator}</td>
-              <td style={{padding: '12px 12px'}}>{row.createTime}</td>
-              <td style={{padding: '12px 12px'}}>{row.lastRunTime}</td>
-              <td style={{padding: '12px 12px'}}>{row.runCount}</td>
-              <td style={{padding: '12px 12px'}}>
-                <span style={{background: priorityColor[row.priority], color: '#fff', borderRadius: 6, padding: '4px 12px', fontSize: 15, fontWeight: 500}}>{row.priority}</span>
+              <td style={{padding: '12px'}}>{row.creator}</td>
+              <td style={{padding: '12px'}}>{row.createTime}</td>
+              <td style={{padding: '12px'}}>{row.lastRunTime}</td>
+              <td style={{padding: '12px'}}>{row.runCount}</td>
+              <td style={{padding: '12px'}}>
+                {/* 优先级标签渲染 */}
+                <span style={{ ...priorityTagStyle, background: priorityColorMap[row.priority] }}>{row.priority}</span>
               </td>
-              <td style={{padding: '12px 12px'}}>
-                <button style={{marginRight: 6, background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('运行仿真')}}>
-                  <span style={{fontSize: 18}}>▶️</span>运行
-                </button>
-                <button style={{marginRight: 6, background: '#fff', color: '#1890ff', border: '1px solid #1890ff', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('查看详情')}}>
-                  <span style={{fontSize: 18}}>👁️</span>查看
-                </button>
-                <button style={{marginRight: 6, background: '#fff', color: '#faad14', border: '1px solid #faad14', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('编辑工作流')}}>
-                  <span style={{fontSize: 18}}>✏️</span>编辑
-                </button>
-                <button style={{marginRight: 6, background: '#fff', color: '#f5222d', border: '1px solid #f5222d', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); window.confirm('确认删除？')}}>
-                  <span style={{fontSize: 18}}>🗑️</span>删除
-                </button>
-                <button style={{background: '#fff', color: '#222', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('更多操作')}}>
-                  <span style={{fontSize: 18}}>⋯</span>
-                </button>
-              </td>
+              <td style={{padding: '8px', textAlign: 'right'}}>{renderActions()}</td>
             </tr>
           ))}
         </tbody>
@@ -819,7 +898,7 @@ const App: React.FC = () => {
             break;
           case 'author':
             aVal = a.author;
-            bVal = b.author;
+            bVal = a.author;
             break;
           case 'createTime':
             aVal = '2024-01-15'; // 模拟创建时间
@@ -844,6 +923,32 @@ const App: React.FC = () => {
 
     return filtered;
   }, [selectedTab, selectedCategory, sortField, sortOrder]);
+
+  // 修复主页面 app 区 never 类型
+  // 假设 exampleAppList 为应用列表数据，类型声明如下：
+  type AppCard = {
+    id: string;
+    name: string;
+    description: string;
+    image: string;
+    gradient: string;
+    tags: string[];
+    likes: number;
+    views: number;
+  };
+  const exampleAppList: AppCard[] = [
+    {
+      id: 'app1',
+      name: '热管理仿真',
+      description: '热管理相关应用',
+      image: '/assets/react.svg',
+      gradient: 'linear-gradient(90deg,#e0f7fa,#fff)',
+      tags: ['仿真', '热管理'],
+      likes: 120,
+      views: 300,
+    },
+    // ...可补充更多应用...
+  ];
 
   return (
     <div className="app">
