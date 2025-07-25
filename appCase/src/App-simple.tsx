@@ -139,45 +139,6 @@ interface TableColumn {
 // 排序类型
 type SortOrder = 'asc' | 'desc' | null;
 
-// 静态工作流表单内容，严格参考图片样式
-const staticWorkflowRows = [
-  {
-    name: '数据集_20230519_13...',
-    id: 'ds-umjp8bjeuaisme3g',
-    version: 'V2',
-    importStatus: '导入完成',
-    publishStatus: '未发布',
-    usage: '图像生成 > 有监督 微调SFT',
-    format: 'Prompt+图片',
-    sampleCount: '3',
-    owner: 'jkzhan',
-    actions: ['详情', '导入', '发布', '更多']
-  },
-  {
-    name: '数据集_20230505_18...',
-    id: 'ds-utyw0waij0y3cic9',
-    version: 'V1',
-    importStatus: '导入失败',
-    publishStatus: '未发布',
-    usage: '图像生成 > 有监督 微调SFT',
-    format: 'Prompt+图片',
-    sampleCount: '0',
-    owner: 'jkzhan',
-    actions: ['详情', '导入', '更多']
-  },
-  {
-    name: '数据集_20230422_...',
-    id: 'ds-3dmygdawxqmim...',
-    version: 'V1',
-    importStatus: '导入完成',
-    publishStatus: '已发布',
-    usage: '图像生成 > 有监督 微调SFT',
-    format: 'Prompt+图片',
-    sampleCount: '11',
-    owner: 'jkzhan',
-    actions: ['详情', '去精调', '更多']
-  }
-];
 
 // 新增工作流表单组件
 const initialRows = [
@@ -316,10 +277,9 @@ const WorkflowTable: React.FC = () => {
         <input type="text" placeholder="搜索工作流名称或编号..." value={searchText} onChange={e => setSearchText(e.target.value)} style={{flex: '0 0 240px', padding: '8px 16px', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 15, background: '#fafafa'}} />
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}>
           <option>全部状态</option>
-          <option>未启动</option>
-          <option>运行中</option>
-          <option>已完成</option>
-          <option>失败</option>
+          <option>草稿</option>
+          <option>审核中</option>
+          <option>已发布</option>
         </select>
         <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}>
           <option>全部类型</option>
@@ -337,6 +297,10 @@ const WorkflowTable: React.FC = () => {
         <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, color: '#222', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>📦</span>列表视图</button>
         <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, color: '#222', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>🗂️</span>卡片视图</button>
       </div>
+      {/* 卡片视图和创建工作流按钮区（确保渲染在筛选区或表格区上方，且始终可见） */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <button style={{ background: '#1890ff', border: 'none', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, color: '#fff', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>创建工作流</button>
+      </div>
       {/* 表格区 */}
       <table className="workflow-list-table" style={{width: '100%', marginTop: 0, background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px #eee', borderCollapse: 'collapse', fontSize: 15}}>
         <thead style={{background: '#fafafa'}}>
@@ -347,7 +311,7 @@ const WorkflowTable: React.FC = () => {
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>创建人</th>
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>创建时间</th>
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>最后运行时间</th>
-            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>运行次数</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>应用领域</th>
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>优先级</th>
             <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb', textAlign: 'right'}}>操作</th>
           </tr>
@@ -366,7 +330,7 @@ const WorkflowTable: React.FC = () => {
               <td style={{padding: '12px'}}>{row.creator}</td>
               <td style={{padding: '12px'}}>{row.createTime}</td>
               <td style={{padding: '12px'}}>{row.lastRunTime}</td>
-              <td style={{padding: '12px'}}>{row.runCount}</td>
+              <td style={{padding: '12px'}}>{row.domain}</td>
               <td style={{padding: '12px'}}>
                 {/* 优先级标签渲染 */}
                 <span style={{ ...priorityTagStyle, background: priorityColorMap[row.priority] }}>{row.priority}</span>
@@ -390,56 +354,83 @@ const WorkflowTable: React.FC = () => {
 interface WorkflowItem {
   name: string;
   type: string;
-  status: '未启动' | '运行中' | '已完成' | '失败';
+  status: '草稿' | '审核中' | '已发布' ;
   creator: string;
   createTime: string;
   lastRunTime: string;
-  runCount: number;
+  domain: string;
   priority: '高' | '中' | '低';
 }
 const staticWorkflowList: WorkflowItem[] = [
   {
     name: '赛道仿真验证流程',
     type: '整车性能验证',
-    status: '运行中',
+    status: '草稿',
     creator: 'jkzhan',
     createTime: '2025-07-20 09:12',
     lastRunTime: '2025-07-25 10:30',
-    runCount: 5,
+    domain: '赛道仿真',
     priority: '高',
   },
   {
     name: '热管理仿真流程',
     type: '热管理仿真',
-    status: '未启动',
+    status: '审核中',
     creator: 'teamA',
     createTime: '2025-07-18 14:22',
     lastRunTime: '-',
-    runCount: 0,
+    domain: '热管理',
     priority: '中',
   },
   {
     name: '整车安全分析',
     type: '安全仿真',
-    status: '已完成',
+    status: '已发布',
     creator: 'jkzhan',
     createTime: '2025-07-10 08:00',
     lastRunTime: '2025-07-24 16:45',
-    runCount: 3,
+    domain: '整车安全',
     priority: '低',
-  }
+  },
+  {
+    name: '电池包热失控流程',
+    type: '安全仿真',
+    status: '已发布',
+    creator: 'teamB',
+    createTime: '2025-07-15 11:30',
+    lastRunTime: '2025-07-25 09:00',
+    domain: '整车安全',
+    priority: '高',
+  },
+  {
+    name: '整车能耗分析',
+    type: '整车性能验证',
+    status: '审核中',
+    creator: 'teamC',
+    createTime: '2025-07-12 10:00',
+    lastRunTime: '-',
+    domain: '整车能耗',
+    priority: '中',
+  },
+  {
+    name: '热管理优化流程',
+    type: '热管理仿真',
+    status: '草稿',
+    creator: 'jkzhan',
+    createTime: '2025-07-08 09:00',
+    lastRunTime: '2025-07-22 15:00',
+    domain: '热管理',
+    priority: '低',
+  },
 ];
 const statusColor: Record<WorkflowItem['status'], string> = {
-  '未启动': '#bfbfbf',
-  '运行中': '#1890ff',
-  '已完成': '#52c41a',
-  '失败': '#f5222d'
-};
+  '草稿': '#bfbfbf',
+  '审核中': '#1890ff',
+  '已发布': '#52c41a'};
 const statusIcon: Record<WorkflowItem['status'], string> = {
-  '未启动': '🕒',
-  '运行中': '⏳',
-  '已完成': '✔️',
-  '失败': '❌'
+  '草稿': '🕒',
+  '审核中': '⏳',
+  '已发布': '✔️'
 };
 const priorityColor: Record<WorkflowItem['priority'], string> = {
   '高': '#f5222d',
