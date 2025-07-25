@@ -185,51 +185,445 @@ const initialRows = [
 ];
 const WorkflowForm: React.FC<{ onBack: () => void }> = ({ onBack }) => (
   <div className="workflow-form-page">
-    <h2>整车仿真工作流管理</h2>
-    <form className="workflow-form">
-      <table className="workflow-table">
-        <thead>
+    {/* 面包屑导航 */}
+    <div className="breadcrumb" style={{marginBottom: 20, fontSize: 15, color: '#888', display: 'flex', alignItems: 'center'}}>
+      <span style={{cursor: 'pointer', color: '#1890ff', fontWeight: 500}} onClick={onBack}>首页</span>
+      <span style={{margin: '0 8px'}}>/</span>
+      <span style={{color: '#222', fontWeight: 500}}>工作流管理</span>
+    </div>
+    {/* 顶部统计卡片区 */}
+    <div className="workflow-stats" style={{display: 'flex', gap: 24, marginBottom: 24}}>
+      <div style={{flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+        <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>总工作流</div>
+        <div style={{fontSize: 32, fontWeight: 700, color: '#1890ff', display: 'flex', alignItems: 'center', gap: 8}}>
+          127 <span style={{fontSize: 22}}>📊</span>
+        </div>
+        <div style={{fontSize: 14, color: '#16a34a', marginTop: 4}}>+12%</div>
+      </div>
+      <div style={{flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+        <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>运行中</div>
+        <div style={{fontSize: 32, fontWeight: 700, color: '#1890ff', display: 'flex', alignItems: 'center', gap: 8}}>
+          23 <span style={{fontSize: 22}}>🔄</span>
+        </div>
+        <div style={{fontSize: 14, color: '#16a34a', marginTop: 4}}>+5%</div>
+      </div>
+      <div style={{flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+        <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>已完成</div>
+        <div style={{fontSize: 32, fontWeight: 700, color: '#52c41a', display: 'flex', alignItems: 'center', gap: 8}}>
+          89 <span style={{fontSize: 22}}>✔️</span>
+        </div>
+        <div style={{fontSize: 14, color: '#16a34a', marginTop: 4}}>+8%</div>
+      </div>
+      <div style={{flex: 1, background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+        <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>失败</div>
+        <div style={{fontSize: 32, fontWeight: 700, color: '#f5222d', display: 'flex', alignItems: 'center', gap: 8}}>
+          15 <span style={{fontSize: 22}}>❌</span>
+        </div>
+        <div style={{fontSize: 14, color: '#f5222d', marginTop: 4}}>-3%</div>
+      </div>
+    </div>
+    <WorkflowTable />
+    <div className="form-actions" style={{marginTop: 24}}>
+      <button type="button" className="secondary-btn" onClick={onBack} style={{borderRadius: 8, padding: '8px 24px', fontSize: 16, border: '1px solid #e5e7eb', background: '#fff', color: '#222', fontWeight: 500}}>返回</button>
+    </div>
+  </div>
+);
+
+const WorkflowTable: React.FC = () => {
+  // 排序、筛选、搜索等可扩展
+  return (
+    <div className="workflow-list-section" style={{marginTop: 0}}>
+      {/* 搜索和筛选区 */}
+      <div className="workflow-list-header" style={{display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16}}>
+        <input type="text" placeholder="搜索工作流名称或编号..." style={{flex: '0 0 240px', padding: '8px 16px', border: '1px solid #e5e7eb', borderRadius: 8, fontSize: 15, background: '#fafafa'}} />
+        <select style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}><option>全部状态</option><option>未启动</option><option>运行中</option><option>已完成</option><option>失败</option></select>
+        <select style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}><option>全部类型</option><option>热管理仿真</option><option>整车性能验证</option><option>安全仿真</option></select>
+        <select style={{border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 16px', fontSize: 15, background: '#fafafa'}}><option>全部优先级</option><option>高</option><option>中</option><option>低</option></select>
+        <button style={{background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, boxShadow: '0 1px 4px #e5e7eb', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>🔍</span>筛选</button>
+        <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, color: '#222', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>📦</span>列表视图</button>
+        <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '8px 24px', fontSize: 15, fontWeight: 500, color: '#222', display: 'flex', alignItems: 'center', gap: 6}}><span style={{fontSize: 18}}>🗂️</span>卡片视图</button>
+      </div>
+      {/* 表格区 */}
+      <table className="workflow-list-table" style={{width: '100%', marginTop: 0, background: '#fff', borderRadius: 16, boxShadow: '0 2px 8px #eee', borderCollapse: 'collapse', fontSize: 15}}>
+        <thead style={{background: '#fafafa'}}>
           <tr>
-            <th>工作流名称/版本ID</th>
-            <th>最新版本</th>
-            <th>导入状态</th>
-            <th>发布状态</th>
-            <th>数据用途</th>
-            <th>数据格式</th>
-            <th>样本数</th>
-            <th>创建人</th>
-            <th>操作</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>工作流名称</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>类型</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>状态</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>创建人</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>创建时间</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>最后运行时间</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>运行次数</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>优先级</th>
+            <th style={{padding: '16px 12px', fontWeight: 600, color: '#333', borderBottom: '1px solid #e5e7eb'}}>操作</th>
           </tr>
         </thead>
         <tbody>
-          {staticWorkflowRows.map((row, idx) => (
-            <tr key={idx}>
-              <td>
-                <div style={{fontWeight: 'bold'}}>{row.name}</div>
-                <div style={{fontSize: '12px', color: '#888'}}>{row.id}</div>
+          {staticWorkflowList.map((row, idx) => (
+            <tr key={idx} style={{cursor: 'pointer', background: idx % 2 === 0 ? '#f7faff' : '#fff', transition: 'background 0.2s', height: 56}}>
+              <td style={{padding: '12px 12px', fontWeight: 500, color: '#222'}}>{row.name}</td>
+              <td style={{padding: '12px 12px'}}><span className="workflow-type-tag" style={{background: '#e6f7ff', color: '#1890ff', borderRadius: 6, padding: '4px 12px', fontSize: 15, fontWeight: 500}}>{row.type}</span></td>
+              <td style={{padding: '12px 12px'}}>
+                <span style={{color: statusColor[row.status], fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6, fontSize: 15}}>
+                  <span>{statusIcon[row.status]}</span>
+                  <span>{row.status}</span>
+                </span>
               </td>
-              <td>{row.version}</td>
-              <td>{row.importStatus}</td>
-              <td>{row.publishStatus}</td>
-              <td>{row.usage}</td>
-              <td>{row.format}</td>
-              <td>{row.sampleCount}</td>
-              <td>{row.owner}</td>
-              <td>
-                {row.actions.map((act, i) => (
-                  <button key={i} type="button" style={{marginRight: '4px'}}>{act}</button>
-                ))}
+              <td style={{padding: '12px 12px'}}>{row.creator}</td>
+              <td style={{padding: '12px 12px'}}>{row.createTime}</td>
+              <td style={{padding: '12px 12px'}}>{row.lastRunTime}</td>
+              <td style={{padding: '12px 12px'}}>{row.runCount}</td>
+              <td style={{padding: '12px 12px'}}>
+                <span style={{background: priorityColor[row.priority], color: '#fff', borderRadius: 6, padding: '4px 12px', fontSize: 15, fontWeight: 500}}>{row.priority}</span>
+              </td>
+              <td style={{padding: '12px 12px'}}>
+                <button style={{marginRight: 6, background: '#1890ff', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('运行仿真')}}>
+                  <span style={{fontSize: 18}}>▶️</span>运行
+                </button>
+                <button style={{marginRight: 6, background: '#fff', color: '#1890ff', border: '1px solid #1890ff', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('查看详情')}}>
+                  <span style={{fontSize: 18}}>👁️</span>查看
+                </button>
+                <button style={{marginRight: 6, background: '#fff', color: '#faad14', border: '1px solid #faad14', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('编辑工作流')}}>
+                  <span style={{fontSize: 18}}>✏️</span>编辑
+                </button>
+                <button style={{marginRight: 6, background: '#fff', color: '#f5222d', border: '1px solid #f5222d', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); window.confirm('确认删除？')}}>
+                  <span style={{fontSize: 18}}>🗑️</span>删除
+                </button>
+                <button style={{background: '#fff', color: '#222', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 12px', fontSize: 15, fontWeight: 500, display: 'inline-flex', alignItems: 'center', gap: 4}} onClick={e => {e.stopPropagation(); alert('更多操作')}}>
+                  <span style={{fontSize: 18}}>⋯</span>
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <div className="form-actions">
-        <button type="button" className="secondary-btn" onClick={onBack}>返回</button>
+      {/* 分页区（静态） */}
+      <div style={{display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: 16, gap: 8}}>
+        <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 18px', fontSize: 15, color: '#222', fontWeight: 500}}>上一页</button>
+        <span style={{fontSize: 15, color: '#1890ff', fontWeight: 600}}>1</span>
+        <button style={{background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '6px 18px', fontSize: 15, color: '#222', fontWeight: 500}}>下一页</button>
       </div>
-    </form>
-  </div>
-);
+    </div>
+  );
+};
+
+// 工作流列表静态数据及类型
+interface WorkflowItem {
+  name: string;
+  type: string;
+  status: '未启动' | '运行中' | '已完成' | '失败';
+  creator: string;
+  createTime: string;
+  lastRunTime: string;
+  runCount: number;
+  priority: '高' | '中' | '低';
+}
+const staticWorkflowList: WorkflowItem[] = [
+  {
+    name: '赛道仿真验证流程',
+    type: '整车性能验证',
+    status: '运行中',
+    creator: 'jkzhan',
+    createTime: '2025-07-20 09:12',
+    lastRunTime: '2025-07-25 10:30',
+    runCount: 5,
+    priority: '高',
+  },
+  {
+    name: '热管理仿真流程',
+    type: '热管理仿真',
+    status: '未启动',
+    creator: 'teamA',
+    createTime: '2025-07-18 14:22',
+    lastRunTime: '-',
+    runCount: 0,
+    priority: '中',
+  },
+  {
+    name: '整车安全分析',
+    type: '安全仿真',
+    status: '已完成',
+    creator: 'jkzhan',
+    createTime: '2025-07-10 08:00',
+    lastRunTime: '2025-07-24 16:45',
+    runCount: 3,
+    priority: '低',
+  }
+];
+const statusColor: Record<WorkflowItem['status'], string> = {
+  '未启动': '#bfbfbf',
+  '运行中': '#1890ff',
+  '已完成': '#52c41a',
+  '失败': '#f5222d'
+};
+const statusIcon: Record<WorkflowItem['status'], string> = {
+  '未启动': '🕒',
+  '运行中': '⏳',
+  '已完成': '✔️',
+  '失败': '❌'
+};
+const priorityColor: Record<WorkflowItem['priority'], string> = {
+  '高': '#f5222d',
+  '中': '#faad14',
+  '低': '#bfbfbf'
+};
+
+// 应用详情页面示例数据
+const exampleAppDetail = {
+  name: '整车动能安全',
+  description: '基于MBSE方法，集成STAP的功能安全分析，支持从需求分析到安全验证的全过程开发',
+  version: 'V2.1.0',
+  author: 'jkzhang',
+  createTime: '2024-01-15',
+  updateTime: '2024-03-20',
+  status: '已安装',
+  category: '功能安全',
+  tags: ['功能安全', 'STAP', '整车分析'],
+  likes: 24,
+  views: 156,
+  icon: '�',
+  content: `
+  ## 功能描述
+  本应用基于MBSE方法，集成STAP的功能安全分析工具，支持从需求分析到安全验证的全过程开发。
+
+  ## 更新日志
+  ### V2.1.0
+  - 优化了用户界面
+  - 修复了一些已知问题
+
+  ### V2.0.0
+  - 首次发布
+  `,
+  examples: [
+    {
+      input: '示例输入数据',
+      output: '示例输出数据'
+    }
+  ]
+};
+// 如需模拟 API，可单独定义
+const exampleAppDetailApi = {
+  'GET /api/appDetail': {
+    code: 200,
+    data: exampleAppDetail
+  }
+};
+
+// 模拟的应用数据请求
+const fetchAppDetail = (appName: string) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        code: 200,
+        data: exampleAppDetail
+      });
+    }, 1000);
+  });
+};
+
+// 首页示例数据
+const exampleHomeData = {
+  banner: {
+    title: '欢迎使用 MBSE 应用中心',
+    subtitle: '探索更多功能强大的应用',
+    cta: '立即开始',
+    image: '/api/placeholder/1200x400'
+  },
+  stats: {
+    totalApps: 127,
+    installedApps: 95,
+    availableApps: 32,
+    userFeedback: 256
+  },
+  recentActivities: [
+    {
+      id: 1,
+      type: '安装',
+      appName: '整车动能安全',
+      timestamp: '2024-03-20 10:15'
+    },
+    {
+      id: 2,
+      type: '更新',
+      appName: '空调热管理',
+      timestamp: '2024-03-19 14:30'
+    },
+    {
+      id: 3,
+      type: '安装',
+      appName: '电池管理系统',
+      timestamp: '2024-03-18 09:00'
+    }
+  ],
+  recommendedApps: [
+    {
+      id: 1,
+      name: '智能驾驶辅助',
+      description: 'ADAS系统设计与仿真，支持多种传感器融合和决策算法验证',
+      image: '/api/placeholder/400/200',
+      gradient: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+    },
+    {
+      id: 2,
+      name: '动力总成匹配',
+      description: '动力总成参数匹配与优化，包含发动机、变速箱、电机等关键部件',
+      image: '/api/placeholder/400/200',
+      gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+    }
+  ]
+};
+
+// 模拟的首页数据请求
+const fetchHomeData = () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        code: 200,
+        data: exampleHomeData
+      });
+    }, 1000);
+  });
+};
+
+// 应用中心页面
+const AppCenter: React.FC = () => {
+  const [apps, setApps] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      const result: any = await fetchHomeData();
+      if (result.code === 200) {
+        setApps(result.data.recommendedApps);
+      }
+      setLoading(false);
+    };
+
+    loadData();
+  }, []);
+
+  return (
+    <div className="app-center">
+      {/* Banner 区域 */}
+      <div className="banner" style={{position: 'relative', overflow: 'hidden', borderRadius: 16, marginBottom: 32}}>
+        <div className="banner-content" style={{position: 'relative', zIndex: 2, padding: '80px 24px', color: '#fff'}}>
+          <h1 style={{fontSize: 36, fontWeight: 700, marginBottom: 16}}>欢迎使用 MBSE 应用中心</h1>
+          <p style={{fontSize: 18, marginBottom: 24}}>探索更多功能强大的应用</p>
+          <button style={{background: '#1890ff', border: 'none', borderRadius: 8, padding: '12px 24px', fontSize: 18, fontWeight: 500, color: '#fff', display: 'flex', alignItems: 'center', gap: 8}}>
+            <span style={{fontSize: 22}}>🚀</span>立即开始
+          </button>
+        </div>
+        <div className="banner-image" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1, opacity: 0.3}}>
+          <img src="/api/placeholder/1200x400" alt="Banner" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+        </div>
+      </div>
+
+      {/* 统计卡片区 */}
+      <div className="stats-cards" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 24, marginBottom: 32}}>
+        <div className="stat-card" style={{background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+          <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>总应用数</div>
+          <div style={{fontSize: 32, fontWeight: 700, color: '#1890ff', display: 'flex', alignItems: 'center', gap: 8}}>
+            {loading ? '加载中...' : apps.length} <span style={{fontSize: 22}}>📱</span>
+          </div>
+        </div>
+        <div className="stat-card" style={{background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+          <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>已安装应用</div>
+          <div style={{fontSize: 32, fontWeight: 700, color: '#52c41a', display: 'flex', alignItems: 'center', gap: 8}}>
+            {loading ? '加载中...' : apps.filter((app: any) => app.status === '已安装').length} <span style={{fontSize: 22}}>✔️</span>
+          </div>
+        </div>
+        <div className="stat-card" style={{background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+          <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>可安装应用</div>
+          <div style={{fontSize: 32, fontWeight: 700, color: '#faad14', display: 'flex', alignItems: 'center', gap: 8}}>
+            {loading ? '加载中...' : apps.filter((app: any) => app.status === '可安装').length} <span style={{fontSize: 22}}>⬇️</span>
+          </div>
+        </div>
+        <div className="stat-card" style={{background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'flex-start'}}>
+          <div style={{fontSize: 16, color: '#222', fontWeight: 600, marginBottom: 8}}>用户反馈</div>
+          <div style={{fontSize: 32, fontWeight: 700, color: '#722ed1', display: 'flex', alignItems: 'center', gap: 8}}>
+            {loading ? '加载中...' : '256条'} <span style={{fontSize: 22}}>💬</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 最近活动 */}
+      <div className="recent-activities" style={{background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24, marginBottom: 32}}>
+        <div style={{fontSize: 18, fontWeight: 600, marginBottom: 16}}>最近活动</div>
+        <div style={{fontSize: 14, color: '#888', marginBottom: 12}}>
+          {loading ? '加载中...' : '最近有 3 项活动'}
+        </div>
+        <div className="activity-list" style={{maxHeight: 200, overflowY: 'auto'}}>
+          {loading ? (
+            <div style={{textAlign: 'center', padding: 16, color: '#888'}}>加载中...</div>
+          ) : (
+            exampleHomeData.recentActivities.map((activity, index) => (
+              <div key={activity.id} className="activity-item" style={{display: 'flex', alignItems: 'center', padding: '8px 0', borderBottom: index === exampleHomeData.recentActivities.length - 1 ? 'none' : '1px solid #e5e7eb'}}>
+                <div className="activity-icon" style={{width: 32, height: 32, borderRadius: '50%', background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 12}}>
+                  {activity.type === '安装' && <span style={{fontSize: 16, color: '#52c41a'}}>✔️</span>}
+                  {activity.type === '更新' && <span style={{fontSize: 16, color: '#faad14'}}>🔄</span>}
+                  {activity.type === '删除' && <span style={{fontSize: 16, color: '#f5222d'}}>🗑️</span>}
+                </div>
+                <div className="activity-content" style={{flex: 1}}>
+                  <div style={{fontSize: 14, color: '#222', marginBottom: 4}}>{activity.appName}</div>
+                  <div style={{fontSize: 12, color: '#888'}}>{activity.timestamp}</div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* 推荐应用 */}
+      <div className="recommended-apps" style={{background: '#fff', borderRadius: 12, boxShadow: '0 2px 8px #eee', padding: 24}}>
+        <div style={{fontSize: 18, fontWeight: 600, marginBottom: 16}}>推荐应用</div>
+        <div className="app-grid" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16}}>
+          {loading ? (
+            <div style={{textAlign: 'center', padding: 32, color: '#888'}}>加载中...</div>
+          ) : (
+            apps.map(app => (
+              <div key={app.id} className="app-card" style={{borderRadius: 12, overflow: 'hidden', cursor: 'pointer', position: 'relative'}}>
+                <div className="app-image" style={{width: '100%', height: 120, background: app.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                  <img src={app.image} alt={app.name} style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} />
+                </div>
+                <div className="app-info" style={{padding: 16, display: 'flex', flexDirection: 'column', gap: 8}}>
+                  <div className="app-name" style={{fontSize: 16, fontWeight: 500, color: '#222'}}>{app.name}</div>
+                  <div className="app-description" style={{fontSize: 14, color: '#666', flex: 1}}>{app.description}</div>
+                  <div className="app-meta" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12, color: '#999'}}>
+                    <div className="app-tags" style={{display: 'flex', gap: 4}}>
+                      {app.tags.map(tag => (
+                        <span key={tag} className="tag" style={{background: '#e6f7ff', color: '#1890ff', borderRadius: 12, padding: '4px 8px', fontSize: 12}}>{tag}</span>
+                      ))}
+                    </div>
+                    <div className="app-stats" style={{display: 'flex', gap: 12}}>
+                      <div className="app-likes" style={{display: 'flex', alignItems: 'center', gap: 4}}>
+                        <span style={{fontSize: 16}}>👍</span>
+                        <span style={{fontSize: 14, color: '#222'}}>{app.likes}</span>
+                      </div>
+                      <div className="app-views" style={{display: 'flex', alignItems: 'center', gap: 4}}>
+                        <span style={{fontSize: 16}}>👁️</span>
+                        <span style={{fontSize: 14, color: '#222'}}>{app.views}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="app-overlay" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0, 0, 0, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0, transition: 'opacity 0.3s'}}>
+                  <div className="overlay-content" style={{textAlign: 'center', color: '#fff', padding: 16}}>
+                    <div className="overlay-title" style={{fontSize: 18, fontWeight: 500, marginBottom: 8}}>{app.name}</div>
+                    <div className="overlay-description" style={{fontSize: 14, marginBottom: 16}}>{app.description}</div>
+                    <button className="overlay-btn" style={{background: '#1890ff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 14, fontWeight: 500, color: '#fff', display: 'flex', alignItems: 'center', gap: 4}}>
+                      <span style={{fontSize: 16}}>➡️</span> 查看详情
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   // 页面导航状态，扩展为 home | detail | workflow
@@ -385,11 +779,6 @@ const App: React.FC = () => {
     setCurrentPage('detail');
   };
 
-  const handleBackToHome = () => {
-    setCurrentPage('home');
-    setCurrentAppName('');
-  };
-  
   const filteredApps = React.useMemo(() => {
     let filtered = applications.filter(app => {
       // 根据标签页筛选
