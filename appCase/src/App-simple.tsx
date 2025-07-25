@@ -3,7 +3,7 @@ import './App.css';
 import ApplicationDetail from './pages/ApplicationDetail';
 
 // 页面类型定义
-type PageType = 'home' | 'detail';
+type PageType = 'home' | 'detail' | 'workflow';
 
 // 模拟应用数据
 const applications = [
@@ -139,9 +139,101 @@ interface TableColumn {
 // 排序类型
 type SortOrder = 'asc' | 'desc' | null;
 
+// 静态工作流表单内容，严格参考图片样式
+const staticWorkflowRows = [
+  {
+    name: '数据集_20230519_13...',
+    id: 'ds-umjp8bjeuaisme3g',
+    version: 'V2',
+    importStatus: '导入完成',
+    publishStatus: '未发布',
+    usage: '图像生成 > 有监督 微调SFT',
+    format: 'Prompt+图片',
+    sampleCount: '3',
+    owner: 'jkzhan',
+    actions: ['详情', '导入', '发布', '更多']
+  },
+  {
+    name: '数据集_20230505_18...',
+    id: 'ds-utyw0waij0y3cic9',
+    version: 'V1',
+    importStatus: '导入失败',
+    publishStatus: '未发布',
+    usage: '图像生成 > 有监督 微调SFT',
+    format: 'Prompt+图片',
+    sampleCount: '0',
+    owner: 'jkzhan',
+    actions: ['详情', '导入', '更多']
+  },
+  {
+    name: '数据集_20230422_...',
+    id: 'ds-3dmygdawxqmim...',
+    version: 'V1',
+    importStatus: '导入完成',
+    publishStatus: '已发布',
+    usage: '图像生成 > 有监督 微调SFT',
+    format: 'Prompt+图片',
+    sampleCount: '11',
+    owner: 'jkzhan',
+    actions: ['详情', '去精调', '更多']
+  }
+];
+
+// 新增工作流表单组件
+const initialRows = [
+  { name: '', desc: '', nodes: '', owner: '', simType: '' }
+];
+const WorkflowForm: React.FC<{ onBack: () => void }> = ({ onBack }) => (
+  <div className="workflow-form-page">
+    <h2>整车仿真工作流管理</h2>
+    <form className="workflow-form">
+      <table className="workflow-table">
+        <thead>
+          <tr>
+            <th>工作流名称/版本ID</th>
+            <th>最新版本</th>
+            <th>导入状态</th>
+            <th>发布状态</th>
+            <th>数据用途</th>
+            <th>数据格式</th>
+            <th>样本数</th>
+            <th>创建人</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {staticWorkflowRows.map((row, idx) => (
+            <tr key={idx}>
+              <td>
+                <div style={{fontWeight: 'bold'}}>{row.name}</div>
+                <div style={{fontSize: '12px', color: '#888'}}>{row.id}</div>
+              </td>
+              <td>{row.version}</td>
+              <td>{row.importStatus}</td>
+              <td>{row.publishStatus}</td>
+              <td>{row.usage}</td>
+              <td>{row.format}</td>
+              <td>{row.sampleCount}</td>
+              <td>{row.owner}</td>
+              <td>
+                {row.actions.map((act, i) => (
+                  <button key={i} type="button" style={{marginRight: '4px'}}>{act}</button>
+                ))}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="form-actions">
+        <button type="button" className="secondary-btn" onClick={onBack}>返回</button>
+      </div>
+    </form>
+  </div>
+);
+
 const App: React.FC = () => {
-  // 页面导航状态
-  const [currentPage, setCurrentPage] = React.useState<PageType>('home');
+  // 页面导航状态，扩展为 home | detail | workflow
+  const [currentPage, setCurrentPage] = React.useState<'home' | 'detail' | 'workflow'>('home');
   const [currentAppName, setCurrentAppName] = React.useState<string>('');
 
   const [selectedCategory, setSelectedCategory] = React.useState<string>('全部');
@@ -366,23 +458,20 @@ const App: React.FC = () => {
 
   return (
     <div className="app">
-      {/* 根据当前页面状态渲染不同内容 */}
-      {currentPage === 'detail' ? (
+      {/* 页面切换：工作流管理 */}
+      {currentPage === 'workflow' ? (
         <>
-          {/* 顶部标题栏 */}
           <header className="app-header">
             <div className="header-left">
-              <h1>应用中心</h1>
+              <h1>工作流管理</h1>
             </div>
             <div className="user-info">
               <span>管理员</span>
               <div className="avatar">👤</div>
             </div>
           </header>
-
-          {/* 主要内容区域 */}
           <main className="main-content">
-            {/* 左侧导航 */}
+            {/* 左侧导航栏保持不变 */}
             <nav className="sidebar">
               <div className="logo">
                 <div className="logo-icon">MBSE</div>
@@ -392,11 +481,11 @@ const App: React.FC = () => {
                   <span className="nav-icon">⚙️</span>
                   <span>控制台</span>
                 </li>
-                <li className="nav-item active">
+                <li className="nav-item active" onClick={() => setCurrentPage('home')}>
                   <span className="nav-icon">📱</span>
                   <span>应用中心</span>
                 </li>
-                <li className="nav-item">
+                <li className="nav-item active" onClick={() => setCurrentPage('workflow')}>
                   <span className="nav-icon">🔄</span>
                   <span>工作流管理</span>
                 </li>
@@ -418,292 +507,286 @@ const App: React.FC = () => {
                 </li>
               </ul>
             </nav>
-
-            {/* 应用详情页面 */}
             <div className="content-area">
-              <ApplicationDetail 
-                appName={currentAppName} 
-                onBack={handleBackToHome} 
-              />
+              <WorkflowForm onBack={() => setCurrentPage('home')} />
             </div>
           </main>
         </>
+      ) : currentPage === 'detail' ? (
+        <ApplicationDetail appName={currentAppName} onBack={() => setCurrentPage('home')} />
       ) : (
         <>
-          {/* 应用中心首页 */}
-          {/* 顶部标题栏 */}
-          <header className="app-header">
-            <div className="header-left">
-              <h1>应用中心</h1>
-            </div>
-            <div className="user-info">
-              <span>管理员</span>
-              <div className="avatar">👤</div>
-            </div>
-          </header>
-
-      {/* 主要内容区域 */}
-      <main className="main-content">
-        {/* 左侧导航 */}
-        <nav className="sidebar">
-          <div className="logo">
-            <div className="logo-icon">MBSE</div>
+        {/* 顶部标题栏 */}
+        <header className="app-header">
+          <div className="header-left">
+            <h1>应用中心</h1>
           </div>
-          <ul className="nav-menu">
-            <li className="nav-item">
-              <span className="nav-icon">⚙️</span>
-              <span>控制台</span>
-            </li>
-            <li className="nav-item active">
-              <span className="nav-icon">📱</span>
-              <span>应用中心</span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-icon">�</span>
-              <span>工作流管理</span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-icon">�</span>
-              <span>组件管理</span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-icon">�️</span>
-              <span>工具服务</span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-icon">�️</span>
-              <span>模型及数据管理</span>
-            </li>
-            <li className="nav-item">
-              <span className="nav-icon">👥</span>
-              <span>用户及权限管理</span>
-            </li>
-          </ul>
-        </nav>
-
-        {/* 右侧内容区域 */}
-        <div className="content-area">
-          {/* 推荐应用轮播 */}
-          <div className="recommended-section">
-            <div className="carousel-container">
-              <button className="carousel-nav prev" onClick={prevSlide}>❮</button>
-              <div className="carousel-track">
-                {getVisibleSlides().map((app, index) => (
-                  <div 
-                    key={`${app.id}-${index}`} 
-                    className="carousel-slide"
-                    onClick={() => app.name === '空调热管理' && handleAppClick(app.name)}
-                    style={{ cursor: app.name === '空调热管理' ? 'pointer' : 'default' }}
-                  >
-                    <div className="slide-image" style={{ background: app.gradient }}>
-                      <div className="slide-overlay">
-                        <div className="slide-content">
-                          <h3>{app.name}</h3>
-                          <p>{app.description}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button className="carousel-nav next" onClick={nextSlide}>❯</button>
-              
-              {/* 轮播指示器 */}
-              <div className="carousel-indicators">
-                {recommendedApps.map((_, index) => (
-                  <button
-                    key={index}
-                    className={`indicator ${index === currentCarouselIndex ? 'active' : ''}`}
-                    onClick={() => setCurrentCarouselIndex(index)}
-                  />
-                ))}
-              </div>
-            </div>
+          <div className="user-info">
+            <span>管理员</span>
+            <div className="avatar">👤</div>
           </div>
-
-          {/* 主要内容区域 */}
-          <div className="main-content-wrapper">
-            {/* 应用列表 */}
-            <div className="applications-main full-width">
-              {/* 标签页导航 */}
-              <div className="tab-navigation">
-                <div className="tab-left">
-                  <button className={selectedTab === '全部' ? 'tab-btn active' : 'tab-btn'} onClick={() => setSelectedTab('全部')}>全部</button>
-                  <button className={selectedTab === '我收藏的' ? 'tab-btn active' : 'tab-btn'} onClick={() => setSelectedTab('我收藏的')}>我收藏的</button>
-                  <button className={selectedTab === '我发布的' ? 'tab-btn active' : 'tab-btn'} onClick={() => setSelectedTab('我发布的')}>我发布的</button>
-                </div>
-                
-                <div className="tab-right">
-                  <div className="view-controls">
-                    <button className={viewMode === 'grid' ? 'view-btn active' : 'view-btn'} onClick={() => setViewMode('grid')}>
-                      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" fill="currentColor"/><rect x="9" y="1" width="6" height="6" fill="currentColor"/><rect x="1" y="9" width="6" height="6" fill="currentColor"/><rect x="9" y="9" width="6" height="6" fill="currentColor"/></svg>
-                    </button>
-                    <button className={viewMode === 'list' ? 'view-btn active' : 'view-btn'} onClick={() => setViewMode('list')}>
-                      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="2" fill="currentColor"/><rect x="1" y="7" width="14" height="2" fill="currentColor"/><rect x="1" y="12" width="14" height="2" fill="currentColor"/></svg>
-                    </button>
-                  </div>
-                  <select className="category-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                    <option value="全部类型">全部类型</option>
-                    {categories.map(cat => (
-                      <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                  <div className="create-app-dropdown">
-                    <button 
-                      className="create-btn"
-                      onClick={() => setShowCreateDropdown(!showCreateDropdown)}
+        </header>
+        {/* 主要内容区域 */}
+        <main className="main-content">
+          {/* 左侧导航 */}
+          <nav className="sidebar">
+            <div className="logo">
+              <div className="logo-icon">MBSE</div>
+            </div>
+            <ul className="nav-menu">
+              <li className="nav-item">
+                <span className="nav-icon">⚙️</span>
+                <span>控制台</span>
+              </li>
+              <li className="nav-item active" onClick={() => setCurrentPage('home')}>
+                <span className="nav-icon">📱</span>
+                <span>应用中心</span>
+              </li>
+              <li className="nav-item" onClick={() => setCurrentPage('workflow')}>
+                <span className="nav-icon">🔄</span>
+                <span>工作流管理</span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-icon">🧩</span>
+                <span>组件管理</span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-icon">🛠️</span>
+                <span>工具服务</span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-icon">📊</span>
+                <span>模型及数据管理</span>
+              </li>
+              <li className="nav-item">
+                <span className="nav-icon">👥</span>
+                <span>用户及权限管理</span>
+              </li>
+            </ul>
+          </nav>
+          {/* 右侧内容区域 */}
+          <div className="content-area">
+            {/* 推荐应用轮播 */}
+            <div className="recommended-section">
+              <div className="carousel-container">
+                <button className="carousel-nav prev" onClick={prevSlide}>❮</button>
+                <div className="carousel-track">
+                  {getVisibleSlides().map((app, index) => (
+                    <div 
+                      key={`${app.id}-${index}`} 
+                      className="carousel-slide"
+                      onClick={() => app.name === '空调热管理' && handleAppClick(app.name)}
+                      style={{ cursor: app.name === '空调热管理' ? 'pointer' : 'default' }}
                     >
-                      创建应用 ▼
-                    </button>
-                    {showCreateDropdown && (
-                      <div className="dropdown-menu">
-                        {createAppTypes.map(type => (
-                          <div key={type.id} className="dropdown-item">
-                            <div className="dropdown-item-name">{type.name}</div>
-                            <div className="dropdown-item-desc">{type.description}</div>
+                      <div className="slide-image" style={{ background: app.gradient }}>
+                        <div className="slide-overlay">
+                          <div className="slide-content">
+                            <h3>{app.name}</h3>
+                            <p>{app.description}</p>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* 分类筛选 */}
-              <div className="category-filters">
-                {categories.map(category => (
-                  <button
-                    key={category}
-                    className={selectedCategory === category ? 'filter-btn active' : 'filter-btn'}
-                    onClick={() => setSelectedCategory(category)}
-                  >
-                    {category}
-                  </button>
-                ))}
-              </div>
-
-              {/* 应用列表 */}
-              {viewMode === 'list' ? (
-                <div className="app-table">
-                  <div className="table-controls">
-                    <button 
-                      className="column-settings-btn"
-                      onClick={() => setShowColumnSettings(!showColumnSettings)}
-                    >
-                      ⚙️ 列设置
-                    </button>
-                    {showColumnSettings && (
-                      <div className="column-settings-dropdown">
-                        <div className="column-settings-title">选择显示列</div>
-                        {columns.map(column => (
-                          <label key={column.key} className="column-setting-item">
-                            <input
-                              type="checkbox"
-                              checked={column.visible}
-                              onChange={() => toggleColumnVisibility(column.key)}
-                            />
-                            <span>{column.title}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="table-container">
-                    <table>
-                      <thead>
-                        <tr>
-                          {columns.filter(col => col.visible).map(column => (
-                            <th 
-                              key={column.key} 
-                              style={{ width: `${column.width}px` }}
-                              className={`resizable-header ${column.sortable ? 'sortable' : ''}`}
-                            >
-                              <div className="header-content">
-                                <span 
-                                  className="header-title"
-                                  onClick={() => column.sortable && handleSort(column.key)}
-                                >
-                                  {column.title}
-                                  {column.sortable && (
-                                    <span className="sort-icon">
-                                      {getSortIcon(column.key)}
-                                    </span>
-                                  )}
-                                </span>
-                                <div 
-                                  className="resize-handle"
-                                  onMouseDown={(e) => handleColumnResize(e, column.key)}
-                                />
-                              </div>
-                            </th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredApps.map(app => (
-                          <tr key={app.id}>
-                            {columns.filter(col => col.visible).map(column => (
-                              <td key={column.key} style={{ width: `${column.width}px` }}>
-                                {column.key === 'name' && (
-                                  <div className="table-app-name">
-                                    <span className="table-app-icon">{app.icon}</span>
-                                    <div>
-                                      <div className="table-app-title">{app.name}</div>
-                                      <div className="table-app-description">{app.description}</div>
-                                    </div>
-                                  </div>
-                                )}
-                                {column.key === 'version' && 'v1.0.0'}
-                                {column.key === 'category' && (
-                                  <span className="table-category-tag">{app.category}</span>
-                                )}
-                                {column.key === 'author' && app.author}
-                                {column.key === 'createTime' && '2024-01-15'}
-                                {column.key === 'updateTime' && '2024-03-20'}
-                                {column.key === 'actions' && (
-                                  <div className="table-actions">
-                                    <button className="table-action-btn">复制</button>
-                                    <button className="table-action-btn delete">删除</button>
-                                  </div>
-                                )}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : (
-                <div className={`app-grid ${viewMode}`}>
-                  {filteredApps.map(app => (
-                    <div key={app.id} className="app-card">
-                      <div className="app-icon">{app.icon}</div>
-                      <div className="app-info">
-                        <h3>{app.name}</h3>
-                        <p className="app-author">{app.author}</p>
-                        <p className="app-description">{app.description}</p>
-                        <div className="app-tags">
-                          {app.tags.map(tag => (
-                            <span key={tag} className="tag">{tag}</span>
-                          ))}
-                        </div>
-                        <div className="app-stats">
-                          <span className="stat">👍 {app.likes}</span>
-                          <span className="stat">👁️ {app.views}</span>
-                          <span className="stat">⭐ 1</span>
-                          <span className="more">···</span>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              )}
+                <button className="carousel-nav next" onClick={nextSlide}>❯</button>
+                
+                {/* 轮播指示器 */}
+                <div className="carousel-indicators">
+                  {recommendedApps.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`indicator ${index === currentCarouselIndex ? 'active' : ''}`}
+                      onClick={() => setCurrentCarouselIndex(index)}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* 主要内容区域 */}
+            <div className="main-content-wrapper">
+              {/* 应用列表 */}
+              <div className="applications-main full-width">
+                {/* 标签页导航 */}
+                <div className="tab-navigation">
+                  <div className="tab-left">
+                    <button className={selectedTab === '全部' ? 'tab-btn active' : 'tab-btn'} onClick={() => setSelectedTab('全部')}>全部</button>
+                    <button className={selectedTab === '我收藏的' ? 'tab-btn active' : 'tab-btn'} onClick={() => setSelectedTab('我收藏的')}>我收藏的</button>
+                    <button className={selectedTab === '我发布的' ? 'tab-btn active' : 'tab-btn'} onClick={() => setSelectedTab('我发布的')}>我发布的</button>
+                  </div>
+                  
+                  <div className="tab-right">
+                    <div className="view-controls">
+                      <button className={viewMode === 'grid' ? 'view-btn active' : 'view-btn'} onClick={() => setViewMode('grid')}>
+                        <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" fill="currentColor"/><rect x="9" y="1" width="6" height="6" fill="currentColor"/><rect x="1" y="9" width="6" height="6" fill="currentColor"/><rect x="9" y="9" width="6" height="6" fill="currentColor"/></svg>
+                      </button>
+                      <button className={viewMode === 'list' ? 'view-btn active' : 'view-btn'} onClick={() => setViewMode('list')}>
+                        <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="2" fill="currentColor"/><rect x="1" y="7" width="14" height="2" fill="currentColor"/><rect x="1" y="12" width="14" height="2" fill="currentColor"/></svg>
+                      </button>
+                    </div>
+                    <select className="category-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                      <option value="全部类型">全部类型</option>
+                      {categories.map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                    <div className="create-app-dropdown">
+                      <button 
+                        className="create-btn"
+                        onClick={() => setShowCreateDropdown(!showCreateDropdown)}
+                      >
+                        创建应用 ▼
+                      </button>
+                      {showCreateDropdown && (
+                        <div className="dropdown-menu">
+                          {createAppTypes.map(type => (
+                            <div key={type.id} className="dropdown-item">
+                              <div className="dropdown-item-name">{type.name}</div>
+                              <div className="dropdown-item-desc">{type.description}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 分类筛选 */}
+                <div className="category-filters">
+                  {categories.map(category => (
+                    <button
+                      key={category}
+                      className={selectedCategory === category ? 'filter-btn active' : 'filter-btn'}
+                      onClick={() => setSelectedCategory(category)}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+
+                {/* 应用列表 */}
+                {viewMode === 'list' ? (
+                  <div className="app-table">
+                    <div className="table-controls">
+                      <button 
+                        className="column-settings-btn"
+                        onClick={() => setShowColumnSettings(!showColumnSettings)}
+                      >
+                        ⚙️ 列设置
+                      </button>
+                      {showColumnSettings && (
+                        <div className="column-settings-dropdown">
+                          <div className="column-settings-title">选择显示列</div>
+                          {columns.map(column => (
+                            <label key={column.key} className="column-setting-item">
+                              <input
+                                type="checkbox"
+                                checked={column.visible}
+                                onChange={() => toggleColumnVisibility(column.key)}
+                              />
+                              <span>{column.title}</span>
+                            </label>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="table-container">
+                      <table>
+                        <thead>
+                          <tr>
+                            {columns.filter(col => col.visible).map(column => (
+                              <th 
+                                key={column.key} 
+                                style={{ width: `${column.width}px` }}
+                                className={`resizable-header ${column.sortable ? 'sortable' : ''}`}
+                              >
+                                <div className="header-content">
+                                  <span 
+                                    className="header-title"
+                                    onClick={() => column.sortable && handleSort(column.key)}
+                                  >
+                                    {column.title}
+                                    {column.sortable && (
+                                      <span className="sort-icon">
+                                        {getSortIcon(column.key)}
+                                      </span>
+                                    )}
+                                  </span>
+                                  <div 
+                                    className="resize-handle"
+                                    onMouseDown={(e) => handleColumnResize(e, column.key)}
+                                  />
+                                </div>
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredApps.map(app => (
+                            <tr key={app.id}>
+                              {columns.filter(col => col.visible).map(column => (
+                                <td key={column.key} style={{ width: `${column.width}px` }}>
+                                  {column.key === 'name' && (
+                                    <div className="table-app-name">
+                                      <span className="table-app-icon">{app.icon}</span>
+                                      <div>
+                                        <div className="table-app-title">{app.name}</div>
+                                        <div className="table-app-description">{app.description}</div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {column.key === 'version' && 'v1.0.0'}
+                                  {column.key === 'category' && (
+                                    <span className="table-category-tag">{app.category}</span>
+                                  )}
+                                  {column.key === 'author' && app.author}
+                                  {column.key === 'createTime' && '2024-01-15'}
+                                  {column.key === 'updateTime' && '2024-03-20'}
+                                  {column.key === 'actions' && (
+                                    <div className="table-actions">
+                                      <button className="table-action-btn">复制</button>
+                                      <button className="table-action-btn delete">删除</button>
+                                    </div>
+                                  )}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`app-grid ${viewMode}`}>
+                    {filteredApps.map(app => (
+                      <div key={app.id} className="app-card">
+                        <div className="app-icon">{app.icon}</div>
+                        <div className="app-info">
+                          <h3>{app.name}</h3>
+                          <p className="app-author">{app.author}</p>
+                          <p className="app-description">{app.description}</p>
+                          <div className="app-tags">
+                            {app.tags.map(tag => (
+                              <span key={tag} className="tag">{tag}</span>
+                            ))}
+                          </div>
+                          <div className="app-stats">
+                            <span className="stat">👍 {app.likes}</span>
+                            <span className="stat">👁️ {app.views}</span>
+                            <span className="stat">⭐ 1</span>
+                            <span className="more">···</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
         </>
       )}
     </div>
